@@ -1,0 +1,912 @@
+import os
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+from scipy.stats import pearsonr, shapiro, f_oneway
+
+from statsmodels.stats.multicomp import pairwise_tukeyhsd
+import statsmodels.api as sm
+
+from sklearn.datasets import load_iris
+from sklearn.model_selection import (
+    train_test_split,
+    cross_val_score,
+    StratifiedKFold
+)
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    classification_report
+)
+
+
+def load_dataset():
+    """Load the Iris dataset from Scikit-learn."""
+
+    iris = load_iris(as_frame=True)
+
+    data = iris.frame
+
+    # Convert target numbers into species names
+    data["target"] = data["target"].map(
+        dict(enumerate(iris.target_names))
+    )
+
+    return data
+
+
+def explore_data(data):
+    """Display basic information about the dataset."""
+
+    print("\n" + "=" * 60)
+    print("DATASET OVERVIEW")
+    print("=" * 60)
+
+    print(f"\nNumber of observations: {data.shape[0]}")
+    print(f"Number of variables: {data.shape[1]}")
+
+    print("\nVariables:")
+
+    for column in data.columns:
+        print(f" - {column}")
+
+
+def descriptive_statistics(data):
+    """Display descriptive statistics."""
+
+    print("\n" + "=" * 60)
+    print("DESCRIPTIVE STATISTICS")
+    print("=" * 60)
+
+    numerical_data = data.select_dtypes(
+        include="number"
+    )
+
+    print(
+        numerical_data.describe().round(2)
+    )
+
+
+def correlation_analysis(data):
+    """Perform Pearson correlation analysis."""
+
+    print("\n" + "=" * 60)
+    print("CORRELATION ANALYSIS")
+    print("=" * 60)
+
+    numerical_data = data.select_dtypes(
+        include="number"
+    )
+
+    correlation_matrix = numerical_data.corr()
+
+    print("\nPearson Correlation Matrix:")
+
+    print(
+        correlation_matrix.round(3)
+    )
+
+    print("\nSignificance Tests:")
+    print("-" * 60)
+
+    columns = numerical_data.columns
+
+    for i in range(len(columns)):
+
+        for j in range(i + 1, len(columns)):
+
+            variable_1 = columns[i]
+            variable_2 = columns[j]
+
+            x = numerical_data[variable_1]
+            y = numerical_data[variable_2]
+
+            r, p_value = pearsonr(x, y)
+
+            if p_value < 0.05:
+                significance = "Statistically significant"
+            else:
+                significance = "Not statistically significant"
+
+            print(
+                f"{variable_1} vs {variable_2}"
+            )
+
+            print(
+                f"  Pearson r = {r:.3f}"
+            )
+
+            print(
+                f"  p-value   = {p_value:.5f}"
+            )
+
+            print(
+                f"  Result    = {significance}\n"
+            )
+
+
+def statistical_tests(data):
+    """Perform statistical hypothesis tests."""
+
+    print("\n" + "=" * 60)
+    print("STATISTICAL HYPOTHESIS TESTING")
+    print("=" * 60)
+
+    alpha = 0.05
+
+    # ------------------------------------------------
+    # Shapiro-Wilk Normality Test
+    # ------------------------------------------------
+
+    print("\n1. SHAPIRO-WILK NORMALITY TEST")
+    print("-" * 60)
+
+    species = data["target"].unique()
+
+    for group in species:
+
+        group_data = data[
+            data["target"] == group
+        ]["petal length (cm)"]
+
+        statistic, p_value = shapiro(
+            group_data
+        )
+
+        if p_value < alpha:
+            result = "Reject H0 → Data may not be normally distributed"
+        else:
+            result = "Fail to reject H0 → No strong evidence of non-normality"
+
+        print(f"\nSpecies: {group}")
+        print(f"Statistic = {statistic:.4f}")
+        print(f"p-value   = {p_value:.5f}")
+        print(f"Result    = {result}")
+
+    # ------------------------------------------------
+    # One-Way ANOVA
+    # ------------------------------------------------
+
+    print("\n\n2. ONE-WAY ANOVA")
+    print("-" * 60)
+
+    setosa = data[
+        data["target"] == "setosa"
+    ]["petal length (cm)"]
+
+    versicolor = data[
+        data["target"] == "versicolor"
+    ]["petal length (cm)"]
+
+    virginica = data[
+        data["target"] == "virginica"
+    ]["petal length (cm)"]
+
+    statistic, p_value = f_oneway(
+        setosa,
+        versicolor,
+        virginica
+    )
+
+    print("\nTest variable: Petal Length")
+    print("Groups: Setosa, Versicolor, Virginica")
+
+    print(f"\nF-statistic = {statistic:.4f}")
+    print(f"p-value     = {p_value:.10f}")
+
+    print("\nHypotheses:")
+    print("H0: The mean petal length is equal across all species.")
+    print("H1: At least one species has a different mean petal length.")
+
+    if p_value < alpha:
+
+        print(
+            "\nDecision: Reject H0."
+        )
+
+        print(
+            "Conclusion: There is statistically significant "
+            "evidence that mean petal length differs among "
+            "the three species."
+        )
+
+    else:
+
+        print(
+            "\nDecision: Fail to reject H0."
+        )
+
+        print(
+            "Conclusion: There is not enough statistical evidence "
+            "to conclude that the mean petal lengths differ."
+        )
+
+def post_hoc_analysis(data):
+    print("\n" + "=" * 60)
+    print("TUKEY HSD POST-HOC ANALYSIS")
+    print("=" * 60)
+
+    # Variable being compared
+    variable = "petal length (cm)"
+
+    # Perform Tukey HSD
+    tukey = pairwise_tukeyhsd(
+        endog=data[variable],
+        groups=data["target"],
+        alpha=0.05
+    )
+
+    print("\nPairwise comparisons:")
+    print(tukey)
+
+    print("\nInterpretation:")
+
+    # Extract Tukey results
+    results = pd.DataFrame(
+        data=tukey._results_table.data[1:],
+        columns=tukey._results_table.data[0]
+    )
+
+    for _, row in results.iterrows():
+
+        group1 = row["group1"]
+        group2 = row["group2"]
+        p_value = float(row["p-adj"])
+        reject = row["reject"]
+
+        if reject:
+            print(
+                f"- {group1} vs {group2}: "
+                f"Significant difference (p = {p_value:.4f})"
+            )
+        else:
+            print(
+                f"- {group1} vs {group2}: "
+                f"No significant difference (p = {p_value:.4f})"
+            )
+
+def regression_analysis(data):
+    print("\n" + "=" * 60)
+    print("MULTIPLE LINEAR REGRESSION")
+    print("=" * 60)
+
+    # Define dependent variable
+    y = data["petal length (cm)"]
+
+    # Define independent variables
+    X = data[
+        [
+            "sepal length (cm)",
+            "sepal width (cm)",
+            "petal width (cm)"
+        ]
+    ]
+
+    # Add intercept
+    X = sm.add_constant(X)
+
+    # Fit regression model
+    model = sm.OLS(y, X).fit()
+
+    # Display regression results
+    print("\nRegression Summary:")
+    print(model.summary())
+
+    # Model statistics
+    print("\nKey Results:")
+    print(f"R-squared: {model.rsquared:.4f}")
+    print(f"Adjusted R-squared: {model.rsquared_adj:.4f}")
+    print(f"F-statistic p-value: {model.f_pvalue:.6f}")
+
+    # Coefficients
+    print("\nCoefficients:")
+
+    for variable in model.params.index:
+        coefficient = model.params[variable]
+        p_value = model.pvalues[variable]
+
+        print(
+            f"{variable}: "
+            f"coefficient = {coefficient:.4f}, "
+            f"p-value = {p_value:.6f}"
+        )
+
+    # Interpretation
+    print("\nInterpretation:")
+
+    if model.f_pvalue < 0.05:
+        print(
+            "The overall regression model is statistically significant "
+            "at the 5% significance level."
+        )
+    else:
+        print(
+            "The overall regression model is not statistically significant "
+            "at the 5% significance level."
+        )
+
+    print(
+        f"The model explains approximately "
+        f"{model.rsquared * 100:.2f}% of the variation "
+        f"in petal length."
+    )
+
+def machine_learning_analysis(data):
+    print("\n" + "=" * 60)
+    print("MACHINE LEARNING - IRIS CLASSIFICATION")
+    print("=" * 60)
+
+    # Features
+    X = data[
+        [
+            "sepal length (cm)",
+            "sepal width (cm)",
+            "petal length (cm)",
+            "petal width (cm)"
+        ]
+    ]
+
+    # Target
+    y = data["target"]
+
+    # Split data into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        test_size=0.20,
+        random_state=42,
+        stratify=y
+    )
+
+    print(f"\nTraining observations: {len(X_train)}")
+    print(f"Testing observations: {len(X_test)}")
+
+    # Standardize the features
+    scaler = StandardScaler()
+
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+
+    # Create and train model
+    model = LogisticRegression(max_iter=1000)
+
+    model.fit(X_train_scaled, y_train)
+
+    # Make predictions
+    y_pred = model.predict(X_test_scaled)
+
+    # Calculate accuracy
+    accuracy = accuracy_score(y_test, y_pred)
+
+    print(f"\nModel Accuracy: {accuracy:.4f}")
+    print(f"Model Accuracy: {accuracy * 100:.2f}%")
+
+    # Confusion matrix
+    cm = confusion_matrix(y_test, y_pred)
+
+    print("\nConfusion Matrix:")
+    print(cm)
+
+    # Classification report
+    print("\nClassification Report:")
+    print(
+        classification_report(
+            y_test,
+            y_pred,
+            target_names=[
+                "setosa",
+                "versicolor",
+                "virginica"
+            ]
+        )
+    )
+
+    plt.figure(figsize=(7, 5))
+
+    sns.heatmap(
+        cm,
+        annot=True,
+        fmt="d",
+        xticklabels=["setosa", "versicolor", "virginica"],
+        yticklabels=["setosa", "versicolor", "virginica"]
+    )
+
+    plt.xlabel("Predicted")
+    plt.ylabel("Actual")
+    plt.title("Iris Classification Confusion Matrix")
+
+    os.makedirs("figures", exist_ok=True)
+
+    plt.savefig(
+        "figures/confusion_matrix.png",
+        dpi=300,
+        bbox_inches="tight"
+    )
+
+    plt.close()
+
+    print("\nConfusion matrix saved to:")
+    print("figures/confusion_matrix.png")
+
+def compare_models(data):
+    print("\n" + "=" * 60)
+    print("MODEL COMPARISON")
+    print("=" * 60)
+
+    features = [
+        "sepal length (cm)",
+        "sepal width (cm)",
+        "petal length (cm)",
+        "petal width (cm)"
+    ]
+
+    X = data[features]
+    y = data["target"]
+
+    # --------------------------------------------------
+    # Define models
+    # --------------------------------------------------
+
+    models = {
+        "Logistic Regression": Pipeline([
+            ("scaler", StandardScaler()),
+            ("model", LogisticRegression(max_iter=1000))
+        ]),
+
+        "K-Nearest Neighbors": Pipeline([
+            ("scaler", StandardScaler()),
+            ("model", KNeighborsClassifier(n_neighbors=5))
+        ]),
+
+        "Decision Tree": DecisionTreeClassifier(
+            random_state=42
+        ),
+
+        "Random Forest": RandomForestClassifier(
+            n_estimators=100,
+            random_state=42
+        )
+    }
+
+    # --------------------------------------------------
+    # Cross-validation setup
+    # --------------------------------------------------
+
+    cv = StratifiedKFold(
+        n_splits=5,
+        shuffle=True,
+        random_state=42
+    )
+
+    results = []
+
+    # --------------------------------------------------
+    # Evaluate each model
+    # --------------------------------------------------
+
+    for name, model in models.items():
+
+        accuracy_scores = cross_val_score(
+            model,
+            X,
+            y,
+            cv=cv,
+            scoring="accuracy"
+        )
+
+        precision_scores = cross_val_score(
+            model,
+            X,
+            y,
+            cv=cv,
+            scoring="precision_macro"
+        )
+
+        recall_scores = cross_val_score(
+            model,
+            X,
+            y,
+            cv=cv,
+            scoring="recall_macro"
+        )
+
+        f1_scores = cross_val_score(
+            model,
+            X,
+            y,
+            cv=cv,
+            scoring="f1_macro"
+        )
+
+        results.append({
+            "Model": name,
+            "Accuracy": accuracy_scores.mean(),
+            "Precision": precision_scores.mean(),
+            "Recall": recall_scores.mean(),
+            "F1": f1_scores.mean(),
+            "Accuracy Std": accuracy_scores.std()
+        })
+
+    # --------------------------------------------------
+    # Results table
+    # --------------------------------------------------
+
+    results_df = pd.DataFrame(results)
+
+    print("\nCross-Validation Results:")
+    print("-" * 60)
+
+    display_df = results_df.copy()
+
+    display_df["Accuracy"] = (
+        display_df["Accuracy"] * 100
+    ).round(2)
+
+    display_df["Precision"] = (
+        display_df["Precision"] * 100
+    ).round(2)
+
+    display_df["Recall"] = (
+        display_df["Recall"] * 100
+    ).round(2)
+
+    display_df["F1"] = (
+        display_df["F1"] * 100
+    ).round(2)
+
+    display_df["Accuracy Std"] = (
+        display_df["Accuracy Std"] * 100
+    ).round(2)
+
+    print(
+        display_df[
+            [
+                "Model",
+                "Accuracy",
+                "Precision",
+                "Recall",
+                "F1",
+                "Accuracy Std"
+            ]
+        ].to_string(index=False)
+    )
+
+    # --------------------------------------------------
+    # Save results
+    # --------------------------------------------------
+
+    os.makedirs("results", exist_ok=True)
+
+    results_df.to_csv(
+        "results/model_comparison.csv",
+        index=False
+    )
+
+    print("\nResults saved to:")
+    print("results/model_comparison.csv")
+
+    # --------------------------------------------------
+    # Create comparison chart
+    # --------------------------------------------------
+
+    chart_data = display_df[
+        ["Model", "Accuracy", "Precision", "Recall", "F1"]
+    ]
+
+    chart_data.set_index("Model").plot(
+        kind="bar",
+        figsize=(10, 6)
+    )
+
+    plt.ylabel("Score (%)")
+    plt.xlabel("Model")
+    plt.title("Model Performance Using 5-Fold Cross-Validation")
+
+    plt.ylim(0, 100)
+
+    plt.xticks(rotation=20)
+
+    plt.legend(
+        title="Metric"
+    )
+
+    plt.tight_layout()
+
+    plt.savefig(
+        "figures/model_comparison.png",
+        dpi=300,
+        bbox_inches="tight"
+    )
+
+    plt.close()
+
+    print("\nPerformance chart saved to:")
+    print("figures/model_comparison.png")
+
+def train_prediction_model(data):
+
+    features = [
+        "sepal length (cm)",
+        "sepal width (cm)",
+        "petal length (cm)",
+        "petal width (cm)"
+    ]
+
+    X = data[features]
+    y = data["target"]
+
+    model = Pipeline([
+        ("scaler", StandardScaler()),
+        ("classifier", LogisticRegression(max_iter=1000))
+    ])
+
+    model.fit(X, y)
+
+    return model, features
+
+def predict_new_flower(data):
+    print("\n" + "=" * 60)
+    print("PREDICT A NEW IRIS FLOWER")
+    print("=" * 60)
+
+    # Features used by the model
+    features = [
+        "sepal length (cm)",
+        "sepal width (cm)",
+        "petal length (cm)",
+        "petal width (cm)"
+    ]
+
+    model, features = train_prediction_model(data)
+
+    print("\nEnter the measurements of the flower.")
+
+    try:
+        sepal_length = float(
+            input("Sepal length (cm): ")
+        )
+
+        sepal_width = float(
+            input("Sepal width (cm): ")
+        )
+
+        petal_length = float(
+            input("Petal length (cm): ")
+        )
+
+        petal_width = float(
+            input("Petal width (cm): ")
+        )
+
+    except ValueError:
+        print("\nInvalid input. Please enter numbers only.")
+        return
+        # Validate measurement ranges
+    if not (4.0 <= sepal_length <= 8.0):
+        print("\n⚠️ Sepal length should be between 4.0 and 8.0 cm.")
+        return
+
+    if not (2.0 <= sepal_width <= 5.0):
+        print("\n⚠️ Sepal width should be between 2.0 and 5.0 cm.")
+        return
+
+    if not (1.0 <= petal_length <= 7.0):
+        print("\n⚠️ Petal length should be between 1.0 and 7.0 cm.")
+        return
+
+    if not (0.1 <= petal_width <= 3.0):
+        print("\n⚠️ Petal width should be between 0.1 and 3.0 cm.")
+        return
+
+    # Create a DataFrame for the new flower
+    new_flower = pd.DataFrame(
+        [[
+            sepal_length,
+            sepal_width,
+            petal_length,
+            petal_width
+        ]],
+        columns=features
+    )
+
+    # Scale the new observation
+    prediction = model.predict(new_flower)
+
+    predicted_species = prediction[0]
+
+    print("\n" + "-" * 60)
+    print(f"Predicted Species: {predicted_species.upper()}")
+    print("-" * 60)
+
+def create_visualizations(data):
+    """Create automatic visualizations."""
+
+    print("\n" + "=" * 60)
+    print("CREATING VISUALIZATIONS")
+    print("=" * 60)
+
+    os.makedirs(
+        "figures",
+        exist_ok=True
+    )
+
+    numerical_data = data.select_dtypes(
+        include="number"
+    )
+
+    # Histograms
+    numerical_data.hist(
+        figsize=(10, 8),
+        bins=15
+    )
+
+    plt.suptitle(
+        "Distribution of Numerical Variables"
+    )
+
+    plt.tight_layout()
+
+    plt.savefig(
+        "figures/distributions.png"
+    )
+
+    plt.close()
+
+    # Boxplots
+    plt.figure(figsize=(10, 6))
+
+    sns.boxplot(
+        data=numerical_data
+    )
+
+    plt.title(
+        "Boxplots of Numerical Variables"
+    )
+
+    plt.xticks(rotation=30)
+
+    plt.tight_layout()
+
+    plt.savefig(
+        "figures/boxplots.png"
+    )
+
+    plt.close()
+
+    # Correlation heatmap
+    plt.figure(figsize=(8, 6))
+
+    correlation = numerical_data.corr()
+
+    sns.heatmap(
+        correlation,
+        annot=True,
+        cmap="coolwarm",
+        fmt=".2f"
+    )
+
+    plt.title(
+        "Correlation Heatmap"
+    )
+
+    plt.tight_layout()
+
+    plt.savefig(
+        "figures/correlation_heatmap.png"
+    )
+
+    plt.close()
+
+    # Petal length by species
+    plt.figure(figsize=(8, 6))
+
+    sns.boxplot(
+        data=data,
+        x="target",
+        y="petal length (cm)"
+    )
+
+    plt.title(
+        "Petal Length by Iris Species"
+    )
+
+    plt.xlabel("Species")
+    plt.ylabel("Petal Length (cm)")
+
+    plt.tight_layout()
+
+    plt.savefig(
+        "figures/petal_length_by_species.png"
+    )
+
+    plt.close()
+
+    print("\nVisualizations created successfully!")
+
+
+def main():
+
+    # Load the dataset once
+    data = load_dataset()
+
+    while True:
+
+        print("\n" + "=" * 60)
+        print("                    STATMATE")
+        print("          Statistical Analysis Assistant")
+        print("=" * 60)
+
+        print("\n1. Explore Dataset")
+        print("2. Descriptive Statistics")
+        print("3. Correlation Analysis")
+        print("4. Statistical Tests")
+        print("5. Post-Hoc Analysis")
+        print("6. Regression Analysis")
+        print("7. Machine Learning")
+        print("8. Model Comparison")
+        print("9. Predict New Flower")
+        print("10. Run Complete Analysis")
+        print("0. Exit")
+
+        choice = input("\nEnter your choice: ").strip()
+
+        if choice == "1":
+            explore_data(data)
+
+        elif choice == "2":
+            descriptive_statistics(data)
+
+        elif choice == "3":
+            correlation_analysis(data)
+
+        elif choice == "4":
+            statistical_tests(data)
+
+        elif choice == "5":
+            post_hoc_analysis(data)
+
+        elif choice == "6":
+            regression_analysis(data)
+
+        elif choice == "7":
+            machine_learning_analysis(data)
+
+        elif choice == "8":
+            compare_models(data)
+
+        elif choice == "9":
+            predict_new_flower(data)
+
+        elif choice == "10":
+            explore_data(data)
+            descriptive_statistics(data)
+            correlation_analysis(data)
+            statistical_tests(data)
+            post_hoc_analysis(data)
+            regression_analysis(data)
+            machine_learning_analysis(data)
+            compare_models(data)
+            create_visualizations(data)
+
+        elif choice == "0":
+            print("\nThank you for using StatMate!")
+            print("Goodbye 👋")
+            break
+
+        else:
+            print("\n⚠️ Invalid choice. Please enter a number from 0 to 10.")
+
+
+if __name__ == "__main__":
+    main()
