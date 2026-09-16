@@ -127,13 +127,14 @@ No external CSV download is required.
 
 From the StatMate menu, choose **16. Load Custom CSV/Excel Dataset** and enter the full path to a `.csv`, `.xlsx`, or `.xls` file. StatMate checks that the file exists, has a supported format, contains rows and uniquely named columns, then displays its data types, missing values, detected numerical/categorical variables, and a five-row preview.
 
-Custom datasets currently support the reusable exploration options:
+Custom datasets support the reusable exploration options:
 
 * Explore Dataset
 * Descriptive Statistics
 * Correlation Analysis
+* Regression Analysis — choose one numeric outcome and one or more numeric predictors from a numbered list. Rows missing a selected value are excluded from that model only.
 
-The hypothesis testing, regression, machine-learning, prediction, visualization, and report options remain Iris-specific during this phase, so StatMate prevents them from running against incompatible custom columns. Choose **17. Switch Back to Iris Dataset** at any time to restore the complete original workflow.
+The hypothesis testing, machine-learning, prediction, visualization, and report options remain Iris-specific during this phase, so StatMate prevents them from running against incompatible custom columns. Choose **17. Switch Back to Iris Dataset** at any time to restore the complete original workflow.
 
 ---
 

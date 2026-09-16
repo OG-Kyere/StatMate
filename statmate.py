@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -385,71 +386,154 @@ def post_hoc_analysis(data):
                 f"No significant difference (p = {p_value:.4f})"
             )
 
-def regression_analysis(data):
-    print("\n" + "=" * 60)
-    print("MULTIPLE LINEAR REGRESSION")
-    print("=" * 60)
+def print_regression_results(model, outcome_name):
+    """Print a consistent OLS summary for Iris and custom datasets."""
 
-    # Define dependent variable
-    y = data["petal length (cm)"]
-
-    # Define independent variables
-    X = data[
-        [
-            "sepal length (cm)",
-            "sepal width (cm)",
-            "petal width (cm)"
-        ]
-    ]
-
-    # Add intercept
-    X = sm.add_constant(X)
-
-    # Fit regression model
-    model = sm.OLS(y, X).fit()
-
-    # Display regression results
     print("\nRegression Summary:")
     print(model.summary())
 
-    # Model statistics
     print("\nKey Results:")
     print(f"R-squared: {model.rsquared:.4f}")
     print(f"Adjusted R-squared: {model.rsquared_adj:.4f}")
     print(f"F-statistic p-value: {model.f_pvalue:.6f}")
 
-    # Coefficients
     print("\nCoefficients:")
-
     for variable in model.params.index:
-        coefficient = model.params[variable]
-        p_value = model.pvalues[variable]
-
         print(
             f"{variable}: "
-            f"coefficient = {coefficient:.4f}, "
-            f"p-value = {p_value:.6f}"
+            f"coefficient = {model.params[variable]:.4f}, "
+            f"p-value = {model.pvalues[variable]:.6f}"
         )
 
-    # Interpretation
     print("\nInterpretation:")
-
     if model.f_pvalue < 0.05:
-        print(
-            "The overall regression model is statistically significant "
-            "at the 5% significance level."
-        )
+        print("The overall regression model is statistically significant at the 5% significance level.")
     else:
-        print(
-            "The overall regression model is not statistically significant "
-            "at the 5% significance level."
-        )
+        print("The overall regression model is not statistically significant at the 5% significance level.")
 
     print(
-        f"The model explains approximately "
-        f"{model.rsquared * 100:.2f}% of the variation "
-        f"in petal length."
+        f"The model explains approximately {model.rsquared * 100:.2f}% "
+        f"of the variation in {outcome_name}."
     )
+
+
+def fit_linear_regression(data, outcome, predictors):
+    """Fit OLS after removing rows missing values in selected variables."""
+
+    selected_columns = [outcome, *predictors]
+    analysis_data = (
+        data[selected_columns]
+        .replace([np.inf, -np.inf], np.nan)
+        .dropna()
+    )
+    required_rows = len(predictors) + 2
+
+    if len(analysis_data) < required_rows:
+        raise ValueError(
+            f"Regression needs at least {required_rows} complete rows for the selected variables; "
+            f"only {len(analysis_data)} are available."
+        )
+    if analysis_data[outcome].nunique() < 2:
+        raise ValueError("The outcome variable must contain at least two distinct values.")
+
+    X = sm.add_constant(analysis_data[predictors], has_constant="add")
+    if any(analysis_data[predictor].nunique() < 2 for predictor in predictors):
+        raise ValueError("Predictor variables must each contain at least two distinct values.")
+    if np.linalg.matrix_rank(X.to_numpy(dtype=float)) < X.shape[1]:
+        raise ValueError(
+            "The selected predictors are perfectly collinear. Choose a different combination of predictors."
+        )
+
+    return sm.OLS(analysis_data[outcome], X).fit(), len(analysis_data)
+
+
+def select_custom_regression_variables(data):
+    """Prompt the user to select numeric outcome and predictor columns."""
+
+    numerical_columns = data.select_dtypes(include="number").columns.tolist()
+    if len(numerical_columns) < 2:
+        print("\nWarning: Custom regression needs at least two numeric columns.")
+        return None, None
+
+    print("\nNumeric variables:")
+    for index, column in enumerate(numerical_columns, start=1):
+        print(f"{index}. {column}")
+
+    outcome_choice = input("Choose the numeric outcome variable (number, or press Enter to cancel): ").strip()
+    if not outcome_choice:
+        print("\nCustom regression cancelled.")
+        return None, None
+
+    try:
+        outcome_index = int(outcome_choice) - 1
+        if not 0 <= outcome_index < len(numerical_columns):
+            raise IndexError
+        outcome = numerical_columns[outcome_index]
+    except (ValueError, IndexError):
+        print("\nWarning: Please enter a valid outcome variable number.")
+        return None, None
+
+    predictor_choices = input(
+        "Choose one or more predictor variables (comma-separated numbers, or press Enter to cancel): "
+    ).strip()
+    if not predictor_choices:
+        print("\nCustom regression cancelled.")
+        return None, None
+
+    try:
+        predictor_indices = [int(choice.strip()) - 1 for choice in predictor_choices.split(",")]
+        if (
+            not predictor_indices
+            or len(set(predictor_indices)) != len(predictor_indices)
+            or any(index < 0 or index >= len(numerical_columns) for index in predictor_indices)
+        ):
+            raise ValueError
+        predictors = [numerical_columns[index] for index in predictor_indices]
+    except (ValueError, IndexError):
+        print("\nWarning: Enter unique, valid predictor variable numbers separated by commas.")
+        return None, None
+
+    if outcome in predictors:
+        print("\nWarning: The outcome variable cannot also be a predictor.")
+        return None, None
+
+    return outcome, predictors
+
+
+def custom_regression_analysis(data):
+    """Run a user-configured linear regression on an uploaded dataset."""
+
+    print("\n" + "=" * 60)
+    print("CUSTOM MULTIPLE LINEAR REGRESSION")
+    print("=" * 60)
+
+    outcome, predictors = select_custom_regression_variables(data)
+    if outcome is None:
+        return
+
+    try:
+        model, complete_rows = fit_linear_regression(data, outcome, predictors)
+    except (ValueError, TypeError) as error:
+        print(f"\nWarning: Could not fit the regression model: {error}")
+        return
+
+    print(f"\nOutcome: {outcome}")
+    print("Predictors: " + ", ".join(map(str, predictors)))
+    print(f"Complete rows used: {complete_rows} of {len(data)}")
+    print_regression_results(model, outcome)
+
+
+def regression_analysis(data):
+    print("\n" + "=" * 60)
+    print("MULTIPLE LINEAR REGRESSION")
+    print("=" * 60)
+
+    model, _ = fit_linear_regression(
+        data,
+        "petal length (cm)",
+        ["sepal length (cm)", "sepal width (cm)", "petal width (cm)"],
+    )
+    print_regression_results(model, "petal length")
 
 def machine_learning_analysis(data):
     print("\n" + "=" * 60)
@@ -2328,7 +2412,7 @@ def main():
 
         choice = input("\nEnter your choice: ").strip()
 
-        if choice in {"4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"} and not iris_workflow:
+        if choice in {"4", "5", "7", "8", "9", "10", "11", "12", "13", "14", "15"} and not iris_workflow:
             print(
                 "\nWarning: This option currently uses Iris-specific variables. "
                 "You can still use Explore Dataset, Descriptive Statistics, and "
@@ -2351,7 +2435,10 @@ def main():
             post_hoc_analysis(data)
 
         elif choice == "6":
-            regression_analysis(data)
+            if iris_workflow:
+                regression_analysis(data)
+            else:
+                custom_regression_analysis(data)
 
         elif choice == "7":
             machine_learning_analysis(data)

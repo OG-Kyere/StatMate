@@ -35,7 +35,43 @@ sepal width (cm)              -0.118             1.000             -0.428       
 petal length (cm)              0.872            -0.428              1.000             0.963
 petal width (cm)               0.818            -0.366              0.963             1.000
 
-4. MACHINE LEARNING MODEL RESULTS
+4. REGRESSION ASSUMPTION DIAGNOSTICS
+----------------------------------------------------------------------
+
+4.1 Normality of Residuals
+----------------------------------------
+Shapiro-Wilk statistic: 0.9888
+p-value: 0.2710
+Conclusion: Residuals do not show significant evidence of non-normality.
+
+4.2 Homoscedasticity
+----------------------------------------
+Breusch-Pagan statistic: 6.0391
+p-value: 0.1097
+Conclusion: There is no significant evidence of heteroscedasticity.
+
+4.3 Multicollinearity
+----------------------------------------
+          Feature   VIF
+sepal length (cm) 3.416
+ sepal width (cm) 1.306
+ petal width (cm) 3.890
+
+VIF values around 1 indicate little multicollinearity. Larger values may indicate multicollinearity concerns.
+
+4.4 Autocorrelation
+----------------------------------------
+Durbin-Watson statistic: 1.7830
+Values around 2 generally indicate little first-order autocorrelation.
+Note: The Iris observations do not have a natural time-based ordering, so this statistic is included as a general diagnostic demonstration.
+
+Diagnostic plots:
+- figures/regression_qq_plot.png
+- figures/residuals_vs_fitted.png
+- results/vif_results.csv
+
+
+5. MACHINE LEARNING MODEL RESULTS
 ----------------------------------------------------------------------
               Model  Accuracy  Precision  Recall    F1  Accuracy Std
 Logistic Regression     95.33      95.49   95.33 95.32          4.52
@@ -43,7 +79,7 @@ K-Nearest Neighbors     97.33      97.45   97.33 97.33          2.49
       Decision Tree     95.33      95.72   95.33 95.31          3.40
       Random Forest     94.67      95.12   94.67 94.64          2.67
 
-5. ROC-AUC RESULTS
+6. ROC-AUC RESULTS
 ----------------------------------------------------------------------
               Model  Macro AUC
 Logistic Regression      0.998
@@ -51,7 +87,7 @@ K-Nearest Neighbors      0.992
       Decision Tree      0.965
       Random Forest      0.996
 
-6. FEATURE IMPORTANCE
+7. FEATURE IMPORTANCE
 ----------------------------------------------------------------------
           Feature  Importance
 petal length (cm)      0.4361

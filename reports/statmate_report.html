@@ -46,6 +46,10 @@ h2 {
     margin-top: 40px;
 }
 
+h3 {
+    margin-top: 30px;
+}
+
 .data-table {
     border-collapse: collapse;
     width: 100%;
@@ -69,6 +73,14 @@ h2 {
     margin: 20px 0;
     border-radius: 8px;
     background-color: #f0f2f5;
+}
+
+.note-box {
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 8px;
+    background-color: #f8f8f8;
+    border-left: 4px solid #888;
 }
 
 img {
@@ -230,7 +242,87 @@ Statistical Analysis Report
   </tbody>
 </table>
 
-<h2>4. Machine Learning Model Comparison</h2>
+<h2>4. Regression Assumption Diagnostics</h2>
+
+
+    <table class="data-table">
+        <tr>
+            <th>Diagnostic</th>
+            <th>Statistic</th>
+            <th>p-value</th>
+            <th>Interpretation</th>
+        </tr>
+
+        <tr>
+            <td>Shapiro-Wilk</td>
+            <td>0.9888</td>
+            <td>0.2710</td>
+            <td>No significant evidence of non-normality.</td>
+        </tr>
+
+        <tr>
+            <td>Breusch-Pagan</td>
+            <td>6.0391</td>
+            <td>0.1097</td>
+            <td>No significant evidence of heteroscedasticity.</td>
+        </tr>
+
+        <tr>
+            <td>Durbin-Watson</td>
+            <td>1.7830</td>
+            <td>N/A</td>
+            <td>Values around 2 generally indicate little first-order autocorrelation.</td>
+        </tr>
+    </table>
+    
+
+<h3>Variance Inflation Factors</h3>
+
+<table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Feature</th>
+      <th>VIF</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>sepal length (cm)</td>
+      <td>3.416</td>
+    </tr>
+    <tr>
+      <td>sepal width (cm)</td>
+      <td>1.306</td>
+    </tr>
+    <tr>
+      <td>petal width (cm)</td>
+      <td>3.890</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="note-box">
+
+<strong>Note:</strong>
+Durbin-Watson is primarily intended for assessing
+first-order autocorrelation when observations have a
+meaningful ordering. The Iris dataset does not have a
+natural time-based ordering, so this statistic is included
+as a general diagnostic demonstration.
+
+</div>
+
+<h3>Q-Q Plot of Regression Residuals</h3>
+
+<img src="../figures/regression_qq_plot.png"
+     alt="Regression Q-Q Plot">
+
+<h3>Residuals vs Fitted Values</h3>
+
+<img src="../figures/residuals_vs_fitted.png"
+     alt="Residuals vs Fitted Values">
+
+<h2>5. Machine Learning Model Comparison</h2>
 
 <table border="1" class="dataframe data-table">
   <thead>
@@ -282,7 +374,7 @@ Statistical Analysis Report
 <img src="../figures/model_comparison.png"
      alt="Model Comparison">
 
-<h2>5. ROC-AUC Analysis</h2>
+<h2>6. ROC-AUC Analysis</h2>
 
 <table border="1" class="dataframe data-table">
   <thead>
@@ -314,7 +406,7 @@ Statistical Analysis Report
 <img src="../figures/roc_curves.png"
      alt="ROC Curves">
 
-<h2>6. Feature Importance</h2>
+<h2>7. Feature Importance</h2>
 
 <table border="1" class="dataframe data-table">
   <thead>
