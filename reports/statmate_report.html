@@ -1,0 +1,365 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>StatMate Statistical Analysis Report</title>
+
+<style>
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 40px;
+    background-color: #f5f7fa;
+    color: #222;
+}
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 40px;
+}
+
+h2 {
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 8px;
+    margin-top: 40px;
+}
+
+.data-table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 15px;
+    margin-bottom: 30px;
+}
+
+.data-table th,
+.data-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.data-table th {
+    background-color: #eee;
+}
+
+.info-box {
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 8px;
+    background-color: #f0f2f5;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+    margin: 20px auto;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 50px;
+    color: #777;
+    font-size: 14px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>StatMate</h1>
+
+<div class="subtitle">
+Statistical Analysis Report
+</div>
+
+<h2>1. Dataset Information</h2>
+
+<div class="info-box">
+
+<p>
+<strong>Observations:</strong>
+150
+</p>
+
+<p>
+<strong>Variables:</strong>
+5
+</p>
+
+</div>
+
+<h2>2. Descriptive Statistics</h2>
+
+<table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>sepal length (cm)</th>
+      <th>sepal width (cm)</th>
+      <th>petal length (cm)</th>
+      <th>petal width (cm)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>150.000</td>
+      <td>150.000</td>
+      <td>150.000</td>
+      <td>150.000</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>5.843</td>
+      <td>3.057</td>
+      <td>3.758</td>
+      <td>1.199</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>0.828</td>
+      <td>0.436</td>
+      <td>1.765</td>
+      <td>0.762</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>4.300</td>
+      <td>2.000</td>
+      <td>1.000</td>
+      <td>0.100</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>5.100</td>
+      <td>2.800</td>
+      <td>1.600</td>
+      <td>0.300</td>
+    </tr>
+    <tr>
+      <th>50%</th>
+      <td>5.800</td>
+      <td>3.000</td>
+      <td>4.350</td>
+      <td>1.300</td>
+    </tr>
+    <tr>
+      <th>75%</th>
+      <td>6.400</td>
+      <td>3.300</td>
+      <td>5.100</td>
+      <td>1.800</td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td>7.900</td>
+      <td>4.400</td>
+      <td>6.900</td>
+      <td>2.500</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>3. Correlation Matrix</h2>
+
+<table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>sepal length (cm)</th>
+      <th>sepal width (cm)</th>
+      <th>petal length (cm)</th>
+      <th>petal width (cm)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>sepal length (cm)</th>
+      <td>1.000</td>
+      <td>-0.118</td>
+      <td>0.872</td>
+      <td>0.818</td>
+    </tr>
+    <tr>
+      <th>sepal width (cm)</th>
+      <td>-0.118</td>
+      <td>1.000</td>
+      <td>-0.428</td>
+      <td>-0.366</td>
+    </tr>
+    <tr>
+      <th>petal length (cm)</th>
+      <td>0.872</td>
+      <td>-0.428</td>
+      <td>1.000</td>
+      <td>0.963</td>
+    </tr>
+    <tr>
+      <th>petal width (cm)</th>
+      <td>0.818</td>
+      <td>-0.366</td>
+      <td>0.963</td>
+      <td>1.000</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>4. Machine Learning Model Comparison</h2>
+
+<table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Model</th>
+      <th>Accuracy</th>
+      <th>Precision</th>
+      <th>Recall</th>
+      <th>F1</th>
+      <th>Accuracy Std</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Logistic Regression</td>
+      <td>95.33</td>
+      <td>95.49</td>
+      <td>95.33</td>
+      <td>95.32</td>
+      <td>4.52</td>
+    </tr>
+    <tr>
+      <td>K-Nearest Neighbors</td>
+      <td>97.33</td>
+      <td>97.45</td>
+      <td>97.33</td>
+      <td>97.33</td>
+      <td>2.49</td>
+    </tr>
+    <tr>
+      <td>Decision Tree</td>
+      <td>95.33</td>
+      <td>95.72</td>
+      <td>95.33</td>
+      <td>95.31</td>
+      <td>3.40</td>
+    </tr>
+    <tr>
+      <td>Random Forest</td>
+      <td>94.67</td>
+      <td>95.12</td>
+      <td>94.67</td>
+      <td>94.64</td>
+      <td>2.67</td>
+    </tr>
+  </tbody>
+</table>
+
+<img src="../figures/model_comparison.png"
+     alt="Model Comparison">
+
+<h2>5. ROC-AUC Analysis</h2>
+
+<table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Model</th>
+      <th>Macro AUC</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Logistic Regression</td>
+      <td>0.998</td>
+    </tr>
+    <tr>
+      <td>K-Nearest Neighbors</td>
+      <td>0.992</td>
+    </tr>
+    <tr>
+      <td>Decision Tree</td>
+      <td>0.965</td>
+    </tr>
+    <tr>
+      <td>Random Forest</td>
+      <td>0.996</td>
+    </tr>
+  </tbody>
+</table>
+
+<img src="../figures/roc_curves.png"
+     alt="ROC Curves">
+
+<h2>6. Feature Importance</h2>
+
+<table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Feature</th>
+      <th>Importance</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>petal length (cm)</td>
+      <td>0.4361</td>
+    </tr>
+    <tr>
+      <td>petal width (cm)</td>
+      <td>0.4361</td>
+    </tr>
+    <tr>
+      <td>sepal length (cm)</td>
+      <td>0.1061</td>
+    </tr>
+    <tr>
+      <td>sepal width (cm)</td>
+      <td>0.0217</td>
+    </tr>
+  </tbody>
+</table>
+
+<img src="../figures/feature_importance.png"
+     alt="Feature Importance">
+
+<div class="footer">
+
+<p>
+Generated automatically by StatMate
+</p>
+
+<p>
+Statistical Analysis Assistant
+</p>
+
+</div>
+
+</div>
+
+</body>
+
+</html>

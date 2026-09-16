@@ -1,0 +1,64 @@
+======================================================================
+STATMATE — STATISTICAL ANALYSIS REPORT
+======================================================================
+
+1. DATASET INFORMATION
+----------------------------------------------------------------------
+Number of observations: 150
+Number of variables: 5
+
+Variables:
+- sepal length (cm)
+- sepal width (cm)
+- petal length (cm)
+- petal width (cm)
+- target
+
+
+2. DESCRIPTIVE STATISTICS
+----------------------------------------------------------------------
+       sepal length (cm)  sepal width (cm)  petal length (cm)  petal width (cm)
+count         150.000000        150.000000         150.000000        150.000000
+mean            5.843333          3.057333           3.758000          1.199333
+std             0.828066          0.435866           1.765298          0.762238
+min             4.300000          2.000000           1.000000          0.100000
+25%             5.100000          2.800000           1.600000          0.300000
+50%             5.800000          3.000000           4.350000          1.300000
+75%             6.400000          3.300000           5.100000          1.800000
+max             7.900000          4.400000           6.900000          2.500000
+
+3. CORRELATION MATRIX
+----------------------------------------------------------------------
+                   sepal length (cm)  sepal width (cm)  petal length (cm)  petal width (cm)
+sepal length (cm)              1.000            -0.118              0.872             0.818
+sepal width (cm)              -0.118             1.000             -0.428            -0.366
+petal length (cm)              0.872            -0.428              1.000             0.963
+petal width (cm)               0.818            -0.366              0.963             1.000
+
+4. MACHINE LEARNING MODEL RESULTS
+----------------------------------------------------------------------
+              Model  Accuracy  Precision  Recall    F1  Accuracy Std
+Logistic Regression     95.33      95.49   95.33 95.32          4.52
+K-Nearest Neighbors     97.33      97.45   97.33 97.33          2.49
+      Decision Tree     95.33      95.72   95.33 95.31          3.40
+      Random Forest     94.67      95.12   94.67 94.64          2.67
+
+5. ROC-AUC RESULTS
+----------------------------------------------------------------------
+              Model  Macro AUC
+Logistic Regression      0.998
+K-Nearest Neighbors      0.992
+      Decision Tree      0.965
+      Random Forest      0.996
+
+6. FEATURE IMPORTANCE
+----------------------------------------------------------------------
+          Feature  Importance
+petal length (cm)      0.4361
+ petal width (cm)      0.4361
+sepal length (cm)      0.1061
+ sepal width (cm)      0.0217
+
+======================================================================
+END OF STATMATE REPORT
+======================================================================
