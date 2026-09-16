@@ -8,6 +8,11 @@ import seaborn as sns
 from scipy.stats import pearsonr, shapiro, f_oneway
 
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
+
+from statsmodels.stats.diagnostic import het_breuschpagan
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+from statsmodels.stats.stattools import durbin_watson
+import statsmodels.formula.api as smf
 import statsmodels.api as sm
 
 from sklearn.datasets import load_iris
@@ -1131,6 +1136,7 @@ def create_visualizations(data):
     print("\nVisualizations created successfully!")
 
 def generate_report(data):
+
     print("\n" + "=" * 60)
     print("GENERATING STATMATE REPORT")
     print("=" * 60)
@@ -1192,10 +1198,142 @@ def generate_report(data):
         )
 
         # --------------------------------------------------
+        # REGRESSION DIAGNOSTICS
+        # --------------------------------------------------
+
+        report.write("\n\n4. REGRESSION ASSUMPTION DIAGNOSTICS\n")
+        report.write("-" * 70 + "\n")
+
+        vif_path = "results/vif_results.csv"
+
+        predictors = [
+            "sepal length (cm)",
+            "sepal width (cm)",
+            "petal width (cm)"
+        ]
+
+        X = data[predictors]
+        y = data["petal length (cm)"]
+
+        X_with_constant = sm.add_constant(X)
+
+        regression_model = sm.OLS(
+            y,
+            X_with_constant
+        ).fit()
+
+        residuals = regression_model.resid
+
+        # Normality
+        shapiro_stat, shapiro_p = shapiro(residuals)
+
+        report.write("\n4.1 Normality of Residuals\n")
+        report.write("-" * 40 + "\n")
+        report.write(
+            f"Shapiro-Wilk statistic: {shapiro_stat:.4f}\n"
+        )
+        report.write(
+            f"p-value: {shapiro_p:.4f}\n"
+        )
+
+        if shapiro_p > 0.05:
+            report.write(
+                "Conclusion: Residuals do not show significant "
+                "evidence of non-normality.\n"
+            )
+        else:
+            report.write(
+                "Conclusion: Residuals show evidence of "
+                "non-normality.\n"
+            )
+
+        # Homoscedasticity
+        bp_test = het_breuschpagan(
+            residuals,
+            X_with_constant
+        )
+
+        bp_stat = bp_test[0]
+        bp_p = bp_test[1]
+
+        report.write("\n4.2 Homoscedasticity\n")
+        report.write("-" * 40 + "\n")
+        report.write(
+            f"Breusch-Pagan statistic: {bp_stat:.4f}\n"
+        )
+        report.write(
+            f"p-value: {bp_p:.4f}\n"
+        )
+
+        if bp_p > 0.05:
+            report.write(
+                "Conclusion: There is no significant evidence "
+                "of heteroscedasticity.\n"
+            )
+        else:
+            report.write(
+                "Conclusion: There is evidence of "
+                "heteroscedasticity.\n"
+            )
+
+        # Multicollinearity
+        vif_data = pd.DataFrame()
+        vif_data["Feature"] = X.columns
+        vif_data["VIF"] = [
+            variance_inflation_factor(
+                X.values,
+                i
+            )
+            for i in range(X.shape[1])
+        ]
+
+        report.write("\n4.3 Multicollinearity\n")
+        report.write("-" * 40 + "\n")
+        report.write(
+            vif_data.round(3).to_string(index=False)
+        )
+        report.write(
+            "\n\nVIF values around 1 indicate little "
+            "multicollinearity. Larger values may indicate "
+            "multicollinearity concerns.\n"
+        )
+
+        # Durbin-Watson
+        dw_stat = durbin_watson(residuals)
+
+        report.write("\n4.4 Autocorrelation\n")
+        report.write("-" * 40 + "\n")
+        report.write(
+            f"Durbin-Watson statistic: {dw_stat:.4f}\n"
+        )
+        report.write(
+            "Values around 2 generally indicate little "
+            "first-order autocorrelation.\n"
+        )
+        report.write(
+            "Note: The Iris observations do not have a natural "
+            "time-based ordering, so this statistic is included "
+            "as a general diagnostic demonstration.\n"
+        )
+
+        report.write("\nDiagnostic plots:\n")
+        report.write(
+            "- figures/regression_qq_plot.png\n"
+        )
+        report.write(
+            "- figures/residuals_vs_fitted.png\n"
+        )
+
+        if os.path.exists(vif_path):
+            report.write(
+                "- results/vif_results.csv\n"
+            )
+
+        # --------------------------------------------------
         # MACHINE LEARNING RESULTS
         # --------------------------------------------------
 
-        report.write("\n\n4. MACHINE LEARNING MODEL RESULTS\n")
+        report.write("\n\n5. MACHINE LEARNING MODEL RESULTS\n")
         report.write("-" * 70 + "\n")
 
         model_results_path = (
@@ -1240,7 +1378,7 @@ def generate_report(data):
         # ROC-AUC RESULTS
         # --------------------------------------------------
 
-        report.write("\n\n5. ROC-AUC RESULTS\n")
+        report.write("\n\n6. ROC-AUC RESULTS\n")
         report.write("-" * 70 + "\n")
 
         roc_results_path = (
@@ -1275,7 +1413,7 @@ def generate_report(data):
         # FEATURE IMPORTANCE
         # --------------------------------------------------
 
-        report.write("\n\n6. FEATURE IMPORTANCE\n")
+        report.write("\n\n7. FEATURE IMPORTANCE\n")
         report.write("-" * 70 + "\n")
 
         importance_path = (
@@ -1347,7 +1485,111 @@ def generate_html_report(data):
         classes="data-table"
     )
 
-    # Model comparison
+    # --------------------------------------------------
+    # REGRESSION DIAGNOSTICS
+    # --------------------------------------------------
+
+    predictors = [
+        "sepal length (cm)",
+        "sepal width (cm)",
+        "petal width (cm)"
+    ]
+
+    X = data[predictors]
+    y = data["petal length (cm)"]
+
+    X_with_constant = sm.add_constant(X)
+
+    regression_model = sm.OLS(
+        y,
+        X_with_constant
+    ).fit()
+
+    residuals = regression_model.resid
+
+    # Normality
+    shapiro_stat, shapiro_p = shapiro(residuals)
+
+    normality_conclusion = (
+        "No significant evidence of non-normality."
+        if shapiro_p > 0.05
+        else
+        "Evidence of non-normality was detected."
+    )
+
+    # Homoscedasticity
+    bp_test = het_breuschpagan(
+        residuals,
+        X_with_constant
+    )
+
+    bp_stat = bp_test[0]
+    bp_p = bp_test[1]
+
+    homoscedasticity_conclusion = (
+        "No significant evidence of heteroscedasticity."
+        if bp_p > 0.05
+        else
+        "Evidence of heteroscedasticity was detected."
+    )
+
+    # VIF
+    vif_data = pd.DataFrame()
+    vif_data["Feature"] = X.columns
+    vif_data["VIF"] = [
+        variance_inflation_factor(
+            X.values,
+            i
+        )
+        for i in range(X.shape[1])
+    ]
+
+    vif_data["VIF"] = vif_data["VIF"].round(3)
+
+    vif_table = vif_data.to_html(
+        index=False,
+        classes="data-table"
+    )
+
+    # Durbin-Watson
+    dw_stat = durbin_watson(residuals)
+
+    diagnostics_table = f"""
+    <table class="data-table">
+        <tr>
+            <th>Diagnostic</th>
+            <th>Statistic</th>
+            <th>p-value</th>
+            <th>Interpretation</th>
+        </tr>
+
+        <tr>
+            <td>Shapiro-Wilk</td>
+            <td>{shapiro_stat:.4f}</td>
+            <td>{shapiro_p:.4f}</td>
+            <td>{normality_conclusion}</td>
+        </tr>
+
+        <tr>
+            <td>Breusch-Pagan</td>
+            <td>{bp_stat:.4f}</td>
+            <td>{bp_p:.4f}</td>
+            <td>{homoscedasticity_conclusion}</td>
+        </tr>
+
+        <tr>
+            <td>Durbin-Watson</td>
+            <td>{dw_stat:.4f}</td>
+            <td>N/A</td>
+            <td>Values around 2 generally indicate little first-order autocorrelation.</td>
+        </tr>
+    </table>
+    """
+
+    # --------------------------------------------------
+    # MODEL COMPARISON
+    # --------------------------------------------------
+
     model_results_path = "results/model_comparison.csv"
 
     if os.path.exists(model_results_path):
@@ -1383,7 +1625,10 @@ def generate_html_report(data):
             "are not available.</p>"
         )
 
+    # --------------------------------------------------
     # ROC-AUC
+    # --------------------------------------------------
+
     roc_results_path = "results/roc_auc_results.csv"
 
     if os.path.exists(roc_results_path):
@@ -1409,7 +1654,10 @@ def generate_html_report(data):
             "are not available.</p>"
         )
 
-    # Feature importance
+    # --------------------------------------------------
+    # FEATURE IMPORTANCE
+    # --------------------------------------------------
+
     importance_path = (
         "results/feature_importance.csv"
     )
@@ -1439,7 +1687,10 @@ def generate_html_report(data):
             "are not available.</p>"
         )
 
-    # Create HTML document
+    # --------------------------------------------------
+    # CREATE HTML DOCUMENT
+    # --------------------------------------------------
+
     html = f"""
 <!DOCTYPE html>
 
@@ -1488,6 +1739,10 @@ h2 {{
     margin-top: 40px;
 }}
 
+h3 {{
+    margin-top: 30px;
+}}
+
 .data-table {{
     border-collapse: collapse;
     width: 100%;
@@ -1511,6 +1766,14 @@ h2 {{
     margin: 20px 0;
     border-radius: 8px;
     background-color: #f0f2f5;
+}}
+
+.note-box {{
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 8px;
+    background-color: #f8f8f8;
+    border-left: 4px solid #888;
 }}
 
 img {{
@@ -1564,21 +1827,50 @@ Statistical Analysis Report
 
 {correlation}
 
-<h2>4. Machine Learning Model Comparison</h2>
+<h2>4. Regression Assumption Diagnostics</h2>
+
+{diagnostics_table}
+
+<h3>Variance Inflation Factors</h3>
+
+{vif_table}
+
+<div class="note-box">
+
+<strong>Note:</strong>
+Durbin-Watson is primarily intended for assessing
+first-order autocorrelation when observations have a
+meaningful ordering. The Iris dataset does not have a
+natural time-based ordering, so this statistic is included
+as a general diagnostic demonstration.
+
+</div>
+
+<h3>Q-Q Plot of Regression Residuals</h3>
+
+<img src="../figures/regression_qq_plot.png"
+     alt="Regression Q-Q Plot">
+
+<h3>Residuals vs Fitted Values</h3>
+
+<img src="../figures/residuals_vs_fitted.png"
+     alt="Residuals vs Fitted Values">
+
+<h2>5. Machine Learning Model Comparison</h2>
 
 {model_table}
 
 <img src="../figures/model_comparison.png"
      alt="Model Comparison">
 
-<h2>5. ROC-AUC Analysis</h2>
+<h2>6. ROC-AUC Analysis</h2>
 
 {roc_table}
 
 <img src="../figures/roc_curves.png"
      alt="ROC Curves">
 
-<h2>6. Feature Importance</h2>
+<h2>7. Feature Importance</h2>
 
 {importance_table}
 
@@ -1617,6 +1909,286 @@ Statistical Analysis Assistant
     print("\nReport saved to:")
     print(report_path)
 
+def regression_diagnostics(data):
+
+    print("\n" + "=" * 60)
+    print("REGRESSION ASSUMPTION DIAGNOSTICS")
+    print("=" * 60)
+
+    predictors = [
+        "sepal length (cm)",
+        "sepal width (cm)",
+        "petal width (cm)"
+    ]
+
+    X = data[predictors]
+    y = data["petal length (cm)"]
+
+    X_with_constant = sm.add_constant(X)
+
+    model = sm.OLS(
+        y,
+        X_with_constant
+    ).fit()
+
+    residuals = model.resid
+    fitted_values = model.fittedvalues
+
+    # --------------------------------------------------
+    # NORMALITY
+    # --------------------------------------------------
+
+    shapiro_stat, shapiro_p = shapiro(
+        residuals
+    )
+
+    print("\n1. NORMALITY OF RESIDUALS")
+    print("-" * 60)
+
+    print(
+        f"Shapiro-Wilk statistic: "
+        f"{shapiro_stat:.4f}"
+    )
+
+    print(
+        f"p-value: {shapiro_p:.4f}"
+    )
+
+    if shapiro_p > 0.05:
+
+        print(
+            "Decision: Fail to reject H0"
+        )
+
+        print(
+            "Conclusion: Residuals do not show "
+            "significant evidence of non-normality."
+        )
+
+    else:
+
+        print(
+            "Decision: Reject H0"
+        )
+
+        print(
+            "Conclusion: Residuals show evidence "
+            "of non-normality."
+        )
+
+    # --------------------------------------------------
+    # HOMOSCEDASTICITY
+    # --------------------------------------------------
+
+    bp_test = het_breuschpagan(
+        residuals,
+        X_with_constant
+    )
+
+    bp_stat = bp_test[0]
+    bp_p = bp_test[1]
+
+    print("\n2. HOMOSCEDASTICITY")
+    print("-" * 60)
+
+    print(
+        f"Breusch-Pagan statistic: "
+        f"{bp_stat:.4f}"
+    )
+
+    print(
+        f"p-value: {bp_p:.4f}"
+    )
+
+    if bp_p > 0.05:
+
+        print(
+            "Decision: Fail to reject H0"
+        )
+
+        print(
+            "Conclusion: There is no significant "
+            "evidence of heteroscedasticity."
+        )
+
+    else:
+
+        print(
+            "Decision: Reject H0"
+        )
+
+        print(
+            "Conclusion: There is evidence "
+            "of heteroscedasticity."
+        )
+
+    # --------------------------------------------------
+    # MULTICOLLINEARITY
+    # --------------------------------------------------
+
+    vif_data = pd.DataFrame()
+
+    vif_data["Feature"] = X.columns
+
+    vif_data["VIF"] = [
+        variance_inflation_factor(
+            X.values,
+            i
+        )
+        for i in range(X.shape[1])
+    ]
+
+    print("\n3. MULTICOLLINEARITY")
+    print("-" * 60)
+
+    print(
+        vif_data.round(3).to_string(
+            index=False
+        )
+    )
+
+    print(
+        "\nGeneral guideline:"
+    )
+
+    print(
+        "VIF values around 1 indicate little "
+        "multicollinearity."
+    )
+
+    print(
+        "Large VIF values may indicate "
+        "multicollinearity concerns."
+    )
+
+    # --------------------------------------------------
+    # DURBIN-WATSON
+    # --------------------------------------------------
+
+    dw_stat = durbin_watson(
+        residuals
+    )
+
+    print("\n4. AUTOCORRELATION")
+    print("-" * 60)
+
+    print(
+        f"Durbin-Watson statistic: "
+        f"{dw_stat:.4f}"
+    )
+
+    print(
+        "Values around 2 generally indicate "
+        "little first-order autocorrelation."
+    )
+
+    # --------------------------------------------------
+    # Q-Q PLOT
+    # --------------------------------------------------
+
+    os.makedirs(
+        "figures",
+        exist_ok=True
+    )
+
+    plt.figure(
+        figsize=(8, 6)
+    )
+
+    sm.qqplot(
+        residuals,
+        line="45",
+        fit=True
+    )
+
+    plt.title(
+        "Q-Q Plot of Regression Residuals"
+    )
+
+    plt.tight_layout()
+
+    plt.savefig(
+        "figures/regression_qq_plot.png",
+        dpi=300,
+        bbox_inches="tight"
+    )
+
+    plt.close()
+
+    # --------------------------------------------------
+    # RESIDUALS VS FITTED
+    # --------------------------------------------------
+
+    plt.figure(
+        figsize=(8, 6)
+    )
+
+    plt.scatter(
+        fitted_values,
+        residuals
+    )
+
+    plt.axhline(
+        y=0,
+        linestyle="--"
+    )
+
+    plt.xlabel(
+        "Fitted Values"
+    )
+
+    plt.ylabel(
+        "Residuals"
+    )
+
+    plt.title(
+        "Residuals vs Fitted Values"
+    )
+
+    plt.tight_layout()
+
+    plt.savefig(
+        "figures/residuals_vs_fitted.png",
+        dpi=300,
+        bbox_inches="tight"
+    )
+
+    plt.close()
+
+    # --------------------------------------------------
+    # SAVE VIF RESULTS
+    # --------------------------------------------------
+
+    os.makedirs(
+        "results",
+        exist_ok=True
+    )
+
+    vif_data.to_csv(
+        "results/vif_results.csv",
+        index=False
+    )
+
+    print(
+        "\nDiagnostic plots saved to:"
+    )
+
+    print(
+        "figures/regression_qq_plot.png"
+    )
+
+    print(
+        "figures/residuals_vs_fitted.png"
+    )
+
+    print(
+        "\nVIF results saved to:"
+    )
+
+    print(
+        "results/vif_results.csv"
+    )
+
 def main():
 
     # Load the dataset once
@@ -1643,6 +2215,7 @@ def main():
         print("12. Run Complete Analysis")
         print("13. Generate Statistical Report")
         print("14. Generate HTML Report")
+        print("15. Regression Diagnostics")
         print("0. Exit")
 
         choice = input("\nEnter your choice: ").strip()
@@ -1687,22 +2260,27 @@ def main():
             statistical_tests(data)
             post_hoc_analysis(data)
             regression_analysis(data)
+            regression_diagnostics(data)
             machine_learning_analysis(data)
             compare_models(data)
             roc_curve_analysis(data)
             feature_importance_analysis(data)
             create_visualizations(data)
+            generate_report(data)
+            generate_html_report(data)
         elif choice == "13":
             generate_report(data)
         elif choice == "14":
             generate_html_report(data)
+        elif choice == "15":
+            regression_diagnostics(data)
         elif choice == "0":
             print("\nThank you for using StatMate!")
             print("Goodbye 👋")
             break
 
         else:
-            print("\n⚠️ Invalid choice. Please enter a number from 0 to 14.")
+            print("\n⚠️ Invalid choice. Please enter a number from 0 to 15.")
 
 
 
