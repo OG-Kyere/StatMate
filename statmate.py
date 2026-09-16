@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -39,7 +40,7 @@ from sklearn.metrics import (
 
 
 def load_dataset():
-    """Load the Iris dataset from Scikit-learn."""
+    """Load the built-in Iris dataset from Scikit-learn."""
 
     iris = load_iris(as_frame=True)
 
@@ -53,6 +54,113 @@ def load_dataset():
     return data
 
 
+def validate_dataset(data):
+    """Return validation errors and warnings for an uploaded dataset."""
+
+    errors = []
+    warnings = []
+
+    if data.empty:
+        errors.append("The dataset has no rows or no columns.")
+        return errors, warnings
+
+    if data.columns.duplicated().any():
+        duplicates = data.columns[data.columns.duplicated()].tolist()
+        errors.append("Column names must be unique. Duplicate column(s): " + ", ".join(map(str, duplicates)))
+
+    if any(not str(column).strip() for column in data.columns):
+        errors.append("Every column must have a name.")
+
+    empty_columns = data.columns[data.isna().all()].tolist()
+    if empty_columns:
+        warnings.append("Entirely empty column(s): " + ", ".join(map(str, empty_columns)))
+
+    if data.shape[0] < 2:
+        warnings.append("The dataset has fewer than two rows; most analyses need more data.")
+
+    if len(data.select_dtypes(include="number").columns) == 0:
+        warnings.append("No numerical columns were detected; descriptive and correlation analyses will have limited output.")
+
+    return errors, warnings
+
+
+def print_dataset_profile(data, preview_rows=5):
+    """Display a reusable overview for Iris and uploaded datasets."""
+
+    print(f"\nNumber of observations: {data.shape[0]}")
+    print(f"Number of variables: {data.shape[1]}")
+
+    print("\nVariables and data types:")
+    for column, dtype in data.dtypes.items():
+        print(f" - {column}: {dtype}")
+
+    missing_values = data.isna().sum()
+    if missing_values.any():
+        print("\nMissing values:")
+        print(missing_values[missing_values > 0].to_string())
+    else:
+        print("\nMissing values: none")
+
+    numerical_columns = data.select_dtypes(include="number").columns.tolist()
+    categorical_columns = data.select_dtypes(exclude="number").columns.tolist()
+    numerical_text = ", ".join(map(str, numerical_columns)) or "none"
+    categorical_text = ", ".join(map(str, categorical_columns)) or "none"
+    print(f"\nDetected numerical variables: {numerical_text}")
+    print(f"Detected categorical variables: {categorical_text}")
+
+    print(f"\nPreview (first {min(preview_rows, len(data))} rows):")
+    print(data.head(preview_rows).to_string(index=False))
+
+
+def load_custom_dataset():
+    """Prompt for, load, and validate a CSV or Excel dataset."""
+
+    print("\nLoad a CSV or Excel (.xlsx, .xls) dataset.")
+    file_path = input("Enter the full path to the dataset (or press Enter to cancel): ").strip().strip('"')
+
+    if not file_path:
+        print("\nDataset loading cancelled.")
+        return None
+
+    path = Path(file_path).expanduser()
+    if not path.is_file():
+        print(f"\nWarning: File not found: {path}")
+        return None
+
+    suffix = path.suffix.lower()
+    if suffix not in {".csv", ".xlsx", ".xls"}:
+        print("\nWarning: Unsupported file type. Please choose a CSV, XLSX, or XLS file.")
+        return None
+
+    try:
+        if suffix == ".csv":
+            try:
+                data = pd.read_csv(path)
+            except UnicodeDecodeError:
+                data = pd.read_csv(path, encoding="latin-1")
+                print("\nNote: the CSV was read using Latin-1 encoding.")
+        else:
+            data = pd.read_excel(path)
+    except (OSError, ValueError, pd.errors.ParserError, ImportError) as error:
+        print(f"\nWarning: Could not load the dataset: {error}")
+        return None
+
+    data.columns = [str(column).strip() for column in data.columns]
+    errors, warnings = validate_dataset(data)
+
+    if errors:
+        print("\nWarning: The dataset could not be used:")
+        for error in errors:
+            print(f" - {error}")
+        return None
+
+    print("\nDataset loaded successfully.")
+    for warning in warnings:
+        print(f"Warning: {warning}")
+    print_dataset_profile(data)
+    return data
+
+
 def explore_data(data):
     """Display basic information about the dataset."""
 
@@ -60,13 +168,7 @@ def explore_data(data):
     print("DATASET OVERVIEW")
     print("=" * 60)
 
-    print(f"\nNumber of observations: {data.shape[0]}")
-    print(f"Number of variables: {data.shape[1]}")
-
-    print("\nVariables:")
-
-    for column in data.columns:
-        print(f" - {column}")
+    print_dataset_profile(data)
 
 
 def descriptive_statistics(data):
@@ -2191,8 +2293,11 @@ def regression_diagnostics(data):
 
 def main():
 
-    # Load the dataset once
+    # Start with the original Iris workflow. Custom datasets can be loaded
+    # from the menu without changing the built-in data.
     data = load_dataset()
+    dataset_name = "Built-in Iris dataset"
+    iris_workflow = True
 
     while True:
 
@@ -2200,6 +2305,7 @@ def main():
         print("                    STATMATE")
         print("          Statistical Analysis Assistant")
         print("=" * 60)
+        print(f"Current dataset: {dataset_name}")
 
         print("\n1. Explore Dataset")
         print("2. Descriptive Statistics")
@@ -2216,11 +2322,20 @@ def main():
         print("13. Generate Statistical Report")
         print("14. Generate HTML Report")
         print("15. Regression Diagnostics")
+        print("16. Load Custom CSV/Excel Dataset")
+        print("17. Switch Back to Iris Dataset")
         print("0. Exit")
 
         choice = input("\nEnter your choice: ").strip()
 
-        if choice == "1":
+        if choice in {"4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"} and not iris_workflow:
+            print(
+                "\nWarning: This option currently uses Iris-specific variables. "
+                "You can still use Explore Dataset, Descriptive Statistics, and "
+                "Correlation Analysis with any uploaded dataset."
+            )
+
+        elif choice == "1":
             explore_data(data)
 
         elif choice == "2":
@@ -2274,13 +2389,24 @@ def main():
             generate_html_report(data)
         elif choice == "15":
             regression_diagnostics(data)
+        elif choice == "16":
+            custom_data = load_custom_dataset()
+            if custom_data is not None:
+                data = custom_data
+                dataset_name = "Custom dataset"
+                iris_workflow = False
+        elif choice == "17":
+            data = load_dataset()
+            dataset_name = "Built-in Iris dataset"
+            iris_workflow = True
+            print("\nSwitched back to the built-in Iris dataset.")
         elif choice == "0":
             print("\nThank you for using StatMate!")
-            print("Goodbye 👋")
+            print("Goodbye!")
             break
 
         else:
-            print("\n⚠️ Invalid choice. Please enter a number from 0 to 15.")
+            print("\nWarning: Invalid choice. Please enter a number from 0 to 17.")
 
 
 

@@ -2,7 +2,7 @@
 
 StatMate is a Python-based statistical analysis assistant designed to bring common statistical and machine learning workflows into one simple command-line application.
 
-The project uses the **Iris dataset** from Scikit-learn and demonstrates how statistical analysis, hypothesis testing, regression, machine learning, model evaluation, and visualization can be combined into a practical data-analysis workflow.
+The project starts with the **Iris dataset** from Scikit-learn and demonstrates how statistical analysis, hypothesis testing, regression, machine learning, model evaluation, and visualization can be combined into a practical data-analysis workflow. It can also load your own CSV or Excel dataset for reusable data exploration.
 
 ---
 
@@ -15,6 +15,7 @@ StatMate currently provides:
 * Dataset exploration
 * Descriptive statistics
 * Pearson correlation analysis
+* CSV and Excel dataset loading with validation and data profiling
 * Shapiro-Wilk normality testing
 * One-way ANOVA
 * Tukey HSD post-hoc analysis
@@ -121,6 +122,18 @@ iris = load_iris(as_frame=True)
 ```
 
 No external CSV download is required.
+
+### Load your own dataset
+
+From the StatMate menu, choose **16. Load Custom CSV/Excel Dataset** and enter the full path to a `.csv`, `.xlsx`, or `.xls` file. StatMate checks that the file exists, has a supported format, contains rows and uniquely named columns, then displays its data types, missing values, detected numerical/categorical variables, and a five-row preview.
+
+Custom datasets currently support the reusable exploration options:
+
+* Explore Dataset
+* Descriptive Statistics
+* Correlation Analysis
+
+The hypothesis testing, regression, machine-learning, prediction, visualization, and report options remain Iris-specific during this phase, so StatMate prevents them from running against incompatible custom columns. Choose **17. Switch Back to Iris Dataset** at any time to restore the complete original workflow.
 
 ---
 
