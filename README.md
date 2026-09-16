@@ -1,14 +1,16 @@
-# 📊 StatMate — Statistical Analysis Assistant
+# StatMate — Statistical Analysis Assistant
 
-StatMate is a Python-based statistical analysis and machine-learning application built around the Iris dataset.
+StatMate is a Python-based statistical analysis assistant designed to bring common statistical and machine learning workflows into one simple command-line application.
 
-The project combines statistical methods with machine-learning techniques to explore data, test relationships, build predictive models, and evaluate classification performance from one interactive command-line application.
+The project uses the **Iris dataset** from Scikit-learn and demonstrates how statistical analysis, hypothesis testing, regression, machine learning, model evaluation, and visualization can be combined into a practical data-analysis workflow.
 
-## What StatMate Does
+---
+
+## 🚀 Features
+
+### 📊 Statistical Analysis
 
 StatMate currently provides:
-
-### Statistical Analysis
 
 * Dataset exploration
 * Descriptive statistics
@@ -16,59 +18,176 @@ StatMate currently provides:
 * Shapiro-Wilk normality testing
 * One-way ANOVA
 * Tukey HSD post-hoc analysis
-* Multiple linear regression
+* Multiple linear regression using Ordinary Least Squares (OLS)
 
-### Machine Learning
+### 🤖 Machine Learning
 
-* Train/test splitting
-* Feature standardization
+StatMate includes several classification models:
+
 * Logistic Regression
-* K-Nearest Neighbors
+* K-Nearest Neighbors (KNN)
 * Decision Tree
 * Random Forest
-* Five-fold stratified cross-validation
-* Accuracy, precision, recall, and F1-score
-* Confusion matrix
-* New flower species prediction
 
-### Data Visualization
+The application evaluates models using:
 
-StatMate automatically generates visualizations including:
+* Accuracy
+* Precision
+* Recall
+* F1-score
+* Accuracy standard deviation
+* 5-fold stratified cross-validation
 
-* Feature distributions
-* Boxplots
-* Correlation heatmap
-* Petal length by species
-* Classification confusion matrix
-* Model performance comparison
+### 📈 ROC-AUC Analysis
 
-## Dataset
+StatMate performs ROC-AUC analysis using **5-fold cross-validation** and out-of-fold predicted probabilities.
 
-StatMate uses the Iris dataset provided directly through `scikit-learn`.
+The analysis:
 
-The dataset contains 150 observations across three Iris species:
+* Generates one-vs-rest ROC curves
+* Calculates macro-average ROC curves
+* Calculates macro-average AUC
+* Compares the classification models
+* Saves ROC curves as a PNG image
+* Saves AUC results as a CSV file
 
-* Setosa
-* Versicolor
-* Virginica
+### 🌳 Feature Importance
 
-Four flower measurements are used:
+StatMate uses a Random Forest classifier to investigate the relative importance of the four flower measurements.
+
+The analysis:
+
+* Calculates feature importance scores
+* Ranks the predictors
+* Displays the results in the terminal
+* Creates a feature-importance visualization
+* Saves the results as a CSV file
+
+### 🔮 New Flower Prediction
+
+Users can enter measurements for a new flower:
 
 * Sepal length
 * Sepal width
 * Petal length
 * Petal width
 
+StatMate then uses a Logistic Regression model to predict the flower species.
+
+---
+
+## 📉 Data Visualization
+
+StatMate generates visualizations including:
+
+* Feature distribution plots
+* Boxplots
+* Correlation heatmaps
+* Petal-length comparisons by species
+* Classification confusion matrices
+* Model-performance comparisons
+* ROC curves
+* Random Forest feature importance
+
+Generated visualizations are stored in the `figures/` directory.
+
+---
+
+## 🗂️ Dataset
+
+StatMate uses the **Iris dataset** provided by Scikit-learn.
+
+The dataset contains **150 observations** across three Iris species:
+
+* Setosa
+* Versicolor
+* Virginica
+
+Four numerical measurements are used:
+
+| Feature      | Description                        |
+| ------------ | ---------------------------------- |
+| Sepal Length | Length of the sepal in centimetres |
+| Sepal Width  | Width of the sepal in centimetres  |
+| Petal Length | Length of the petal in centimetres |
+| Petal Width  | Width of the petal in centimetres  |
+
+The dataset is loaded directly through Scikit-learn:
+
+```python
+from sklearn.datasets import load_iris
+
+iris = load_iris(as_frame=True)
+```
+
 No external CSV download is required.
 
-## Project Structure
+---
+
+## 🔬 Statistical Workflow
+
+StatMate follows a structured statistical-analysis workflow:
+
+```text
+Load Dataset
+     ↓
+Explore Data
+     ↓
+Descriptive Statistics
+     ↓
+Correlation Analysis
+     ↓
+Normality Testing
+     ↓
+ANOVA
+     ↓
+Tukey HSD
+     ↓
+Regression Analysis
+```
+
+This provides a progression from basic data exploration to inferential statistical analysis.
+
+---
+
+## 🤖 Machine Learning Workflow
+
+The machine-learning workflow follows:
+
+```text
+Prepare Features
+      ↓
+Train/Test Split
+      ↓
+Feature Scaling
+      ↓
+Model Training
+      ↓
+Model Evaluation
+      ↓
+Cross-Validation
+      ↓
+Model Comparison
+      ↓
+ROC-AUC Analysis
+      ↓
+Feature Importance
+      ↓
+New Flower Prediction
+```
+
+This demonstrates several important concepts used in applied machine learning.
+
+---
+
+## 📁 Project Structure
 
 ```text
 StatMate/
 │
 ├── statmate.py
-├── requirements.txt
 ├── README.md
+├── requirements.txt
 ├── .gitignore
 │
 ├── figures/
@@ -77,36 +196,55 @@ StatMate/
 │   ├── correlation_heatmap.png
 │   ├── petal_length_by_species.png
 │   ├── confusion_matrix.png
-│   └── model_comparison.png
+│   ├── model_comparison.png
+│   ├── roc_curves.png
+│   └── feature_importance.png
 │
 └── results/
-    └── model_comparison.csv
+    ├── model_comparison.csv
+    ├── roc_auc_results.csv
+    └── feature_importance.csv
 ```
 
-## Installation
+---
+
+## ⚙️ Installation
 
 Clone the repository:
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/OG-Kyere/StatMate.git
+```
+
+Navigate into the project:
+
+```bash
 cd StatMate
 ```
 
 Install the required packages:
 
 ```bash
-py -m pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
-## Running StatMate
+---
 
-Run:
+## ▶️ Running StatMate
+
+Run the application with:
+
+```bash
+python statmate.py
+```
+
+On Windows, if the `python` command is unavailable, you can use:
 
 ```bash
 py statmate.py
 ```
 
-The application opens an interactive menu where you can choose the analysis you want to perform.
+You will be presented with an interactive menu:
 
 ```text
 ============================================================
@@ -122,97 +260,128 @@ The application opens an interactive menu where you can choose the analysis you 
 6. Regression Analysis
 7. Machine Learning
 8. Model Comparison
-9. Predict New Flower
-10. Run Complete Analysis
+9. ROC-AUC Analysis
+10. Feature Importance
+11. Predict New Flower
+12. Run Complete Analysis
 0. Exit
 ```
 
-## Statistical Workflow
+---
 
-The statistical analysis follows this general workflow:
+## 📊 Output Files
 
-```text
-Dataset
-   ↓
-Exploration
-   ↓
-Descriptive Statistics
-   ↓
-Correlation Analysis
-   ↓
-Normality Testing
-   ↓
-ANOVA
-   ↓
-Tukey HSD
-   ↓
-Regression Analysis
-```
+StatMate automatically saves important analysis results.
 
-## Machine-Learning Workflow
+### Model Comparison
 
 ```text
-Iris Dataset
-     ↓
-Feature Selection
-     ↓
-Stratified Cross-Validation
-     ↓
-Model Training
-     ↓
-Model Evaluation
-     ↓
-Performance Comparison
-     ↓
-New Flower Prediction
+results/model_comparison.csv
 ```
 
-## Technologies
+Contains cross-validation performance metrics for the four machine-learning models.
 
-The project uses:
+### ROC-AUC Results
 
-* Python
-* Pandas
-* NumPy
-* Matplotlib
-* Seaborn
-* SciPy
-* Scikit-learn
-* Statsmodels
+```text
+results/roc_auc_results.csv
+```
 
-## Learning Objectives
+Contains macro-average AUC values for each classification model.
 
-This project was developed to strengthen practical skills in:
+### Feature Importance
 
-* Statistical analysis
-* Statistical hypothesis testing
-* Regression modelling
-* Machine learning
-* Model evaluation
-* Data visualization
-* Python programming
-* Reproducible data analysis
+```text
+results/feature_importance.csv
+```
 
-## Future Improvements
+Contains Random Forest feature-importance scores.
 
-Planned improvements include:
+Visualizations are saved in:
 
-* A graphical user interface
-* More datasets
-* Automated statistical test selection
-* Additional machine-learning algorithms
-* Hyperparameter tuning
-* ROC and precision-recall curves
-* Feature importance analysis
-* Interactive dashboards
-* Automated statistical reports
-
-## Author
-
-**Kyere Ofosu Gideon**
-
-Statistics graduate interested in statistical modelling, data analysis, machine learning, and practical applications of statistics.
+```text
+figures/
+```
 
 ---
 
-*StatMate is a learning and portfolio project demonstrating the integration of statistical analysis and machine learning using Python.*
+## 🛠️ Technologies Used
+
+* **Python**
+* **Pandas** — data manipulation
+* **NumPy** — numerical computation
+* **Matplotlib** — visualization
+* **Seaborn** — statistical visualization
+* **SciPy** — statistical tests
+* **Statsmodels** — statistical modelling
+* **Scikit-learn** — machine learning
+
+---
+
+## 🎯 Learning Objectives
+
+This project was developed to strengthen practical understanding of:
+
+* Exploratory Data Analysis (EDA)
+* Descriptive statistics
+* Statistical hypothesis testing
+* Correlation analysis
+* Analysis of variance
+* Post-hoc testing
+* Linear regression
+* Classification
+* Feature scaling
+* Cross-validation
+* Model evaluation
+* ROC-AUC analysis
+* Feature importance
+* Data visualization
+* Python programming
+* Git and GitHub
+
+---
+
+## 🔮 Future Improvements
+
+Possible future versions of StatMate may include:
+
+* Automated statistical report generation
+* Additional statistical tests
+* More classification algorithms
+* Regression machine-learning models
+* Hyperparameter tuning
+* Automated model selection
+* Interactive dashboards
+* Support for user-uploaded datasets
+* More advanced feature-selection techniques
+* Exportable PDF/HTML analysis reports
+* Improved command-line interface
+
+---
+
+## 👨‍💻 Author
+
+**Deon**
+
+Statistics graduate and aspiring data professional with interests in:
+
+* Statistical modelling
+* Data analysis
+* Machine learning
+* Data visualization
+* Risk analytics
+* Applied statistics
+
+This project is part of my continued development in statistical programming and data science.
+
+---
+
+## 📌 Project Status
+
+StatMate is an ongoing learning and portfolio project.
+
+The current version combines **classical statistical analysis with machine-learning techniques**, providing a practical demonstration of an end-to-end statistical data-analysis workflow.
+
+---
+
+⭐ If you find the project useful, feel free to explore the repository and follow the development of StatMate.
