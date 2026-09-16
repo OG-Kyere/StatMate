@@ -1,0 +1,5 @@
+Model,Macro AUC
+Logistic Regression,0.9981333333333333
+K-Nearest Neighbors,0.9918333333333335
+Decision Tree,0.9650000000000001
+Random Forest,0.996

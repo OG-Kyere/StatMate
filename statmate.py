@@ -27,7 +27,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
-    classification_report
+    classification_report,
+    roc_curve,
+    auc
 )
 
 
@@ -634,6 +636,300 @@ def compare_models(data):
     print("\nPerformance chart saved to:")
     print("figures/model_comparison.png")
 
+def roc_curve_analysis(data):
+
+    print("\n" + "=" * 60)
+    print("ROC-AUC ANALYSIS")
+    print("=" * 60)
+
+    features = [
+        "sepal length (cm)",
+        "sepal width (cm)",
+        "petal length (cm)",
+        "petal width (cm)"
+    ]
+
+    X = data[features]
+    y = data["target"]
+
+    models = {
+        "Logistic Regression": Pipeline([
+            ("scaler", StandardScaler()),
+            ("model", LogisticRegression(max_iter=1000))
+        ]),
+
+        "K-Nearest Neighbors": Pipeline([
+            ("scaler", StandardScaler()),
+            ("model", KNeighborsClassifier(n_neighbors=5))
+        ]),
+
+        "Decision Tree": DecisionTreeClassifier(
+            random_state=42
+        ),
+
+        "Random Forest": RandomForestClassifier(
+            n_estimators=100,
+            random_state=42
+        )
+    }
+
+    cv = StratifiedKFold(
+        n_splits=5,
+        shuffle=True,
+        random_state=42
+    )
+
+    class_labels = sorted(y.unique())
+
+    plt.figure(figsize=(10, 7))
+
+    results = []
+
+    for name, model in models.items():
+
+        # Store out-of-fold probabilities
+        oof_probabilities = pd.DataFrame(
+            index=X.index,
+            columns=class_labels,
+            dtype=float
+        )
+
+        # Generate out-of-fold predictions
+        for train_index, test_index in cv.split(X, y):
+
+            X_train = X.iloc[train_index]
+            X_test = X.iloc[test_index]
+
+            y_train = y.iloc[train_index]
+
+            model.fit(X_train, y_train)
+
+            probabilities = model.predict_proba(X_test)
+
+            model_classes = model.classes_
+
+            for i, class_label in enumerate(model_classes):
+
+                oof_probabilities.loc[
+                    X_test.index,
+                    class_label
+                ] = probabilities[:, i]
+
+        # Calculate one-vs-rest ROC curves
+        # and macro-average AUC
+        all_fpr = [0.0, 1.0]
+        class_curves = []
+
+        for class_label in class_labels:
+
+            binary_y = (
+                y == class_label
+            ).astype(int)
+
+            probabilities = oof_probabilities[
+                class_label
+            ].values
+
+            fpr, tpr, _ = roc_curve(
+                binary_y,
+                probabilities
+            )
+
+            roc_auc = auc(
+                fpr,
+                tpr
+            )
+
+            class_curves.append(
+                (fpr, tpr, roc_auc)
+            )
+
+            all_fpr.extend(fpr)
+
+        # Create common FPR grid
+        mean_fpr = sorted(set(all_fpr))
+
+        mean_tpr = []
+
+        for fpr_value in mean_fpr:
+
+            tpr_values = []
+
+            for fpr, tpr, _ in class_curves:
+
+                tpr_values.append(
+                    __import__("numpy").interp(
+                        fpr_value,
+                        fpr,
+                        tpr
+                    )
+                )
+
+            mean_tpr.append(
+                sum(tpr_values) / len(tpr_values)
+            )
+
+        macro_auc = auc(
+            mean_fpr,
+            mean_tpr
+        )
+
+        plt.plot(
+            mean_fpr,
+            mean_tpr,
+            label=f"{name} (AUC = {macro_auc:.3f})"
+        )
+
+        results.append({
+            "Model": name,
+            "Macro AUC": macro_auc
+        })
+
+    # Random classifier
+    plt.plot(
+        [0, 1],
+        [0, 1],
+        linestyle="--",
+        label="Random Classifier"
+    )
+
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+
+    plt.title(
+        "Macro-Average ROC Curves Using 5-Fold Cross-Validation"
+    )
+
+    plt.legend(
+        loc="lower right"
+    )
+
+    plt.tight_layout()
+
+    os.makedirs("figures", exist_ok=True)
+
+    plt.savefig(
+        "figures/roc_curves.png",
+        dpi=300,
+        bbox_inches="tight"
+    )
+
+    plt.close()
+
+    # Save AUC results
+    results_df = pd.DataFrame(results)
+
+    os.makedirs("results", exist_ok=True)
+
+    results_df.to_csv(
+        "results/roc_auc_results.csv",
+        index=False
+    )
+
+    print("\nMacro-Average ROC-AUC Results:")
+    print("-" * 60)
+
+    display_df = results_df.copy()
+
+    display_df["Macro AUC"] = (
+        display_df["Macro AUC"]
+        .round(3)
+    )
+
+    print(
+        display_df.to_string(
+            index=False
+        )
+    )
+
+    print("\nROC curve saved to:")
+    print("figures/roc_curves.png")
+
+    print("\nAUC results saved to:")
+    print("results/roc_auc_results.csv")
+
+def feature_importance_analysis(data):
+
+    print("\n" + "=" * 60)
+    print("FEATURE IMPORTANCE ANALYSIS")
+    print("=" * 60)
+
+    features = [
+        "sepal length (cm)",
+        "sepal width (cm)",
+        "petal length (cm)",
+        "petal width (cm)"
+    ]
+
+    X = data[features]
+    y = data["target"]
+
+    model = RandomForestClassifier(
+        n_estimators=100,
+        random_state=42
+    )
+
+    model.fit(X, y)
+
+    importance_df = pd.DataFrame({
+        "Feature": features,
+        "Importance": model.feature_importances_
+    })
+
+    importance_df = importance_df.sort_values(
+        by="Importance",
+        ascending=False
+    )
+
+    print("\nFeature Importance:")
+    print("-" * 60)
+
+    display_df = importance_df.copy()
+
+    display_df["Importance"] = (
+        display_df["Importance"].round(4)
+    )
+
+    print(display_df.to_string(index=False))
+
+    os.makedirs("results", exist_ok=True)
+
+    importance_df.to_csv(
+        "results/feature_importance.csv",
+        index=False
+    )
+
+    plt.figure(figsize=(10, 6))
+
+    plt.barh(
+        importance_df["Feature"],
+        importance_df["Importance"]
+    )
+
+    plt.xlabel("Importance")
+    plt.ylabel("Feature")
+    plt.title("Random Forest Feature Importance")
+
+    plt.gca().invert_yaxis()
+
+    plt.tight_layout()
+
+    os.makedirs("figures", exist_ok=True)
+
+    plt.savefig(
+        "figures/feature_importance.png",
+        dpi=300,
+        bbox_inches="tight"
+    )
+
+    plt.close()
+
+    print("\nFeature importance chart saved to:")
+    print("figures/feature_importance.png")
+
+    print("\nFeature importance results saved to:")
+    print("results/feature_importance.csv")
+
 def train_prediction_model(data):
 
     features = [
@@ -855,8 +1151,10 @@ def main():
         print("6. Regression Analysis")
         print("7. Machine Learning")
         print("8. Model Comparison")
-        print("9. Predict New Flower")
-        print("10. Run Complete Analysis")
+        print("9. ROC-AUC Analysis")
+        print("10. Feature Importance")
+        print("11. Predict New Flower")
+        print("12. Run Complete Analysis")
         print("0. Exit")
 
         choice = input("\nEnter your choice: ").strip()
@@ -886,9 +1184,15 @@ def main():
             compare_models(data)
 
         elif choice == "9":
-            predict_new_flower(data)
+            roc_curve_analysis(data)
 
         elif choice == "10":
+            feature_importance_analysis(data)
+
+        elif choice == "11":
+            predict_new_flower(data)
+
+        elif choice == "12":
             explore_data(data)
             descriptive_statistics(data)
             correlation_analysis(data)
@@ -897,6 +1201,8 @@ def main():
             regression_analysis(data)
             machine_learning_analysis(data)
             compare_models(data)
+            roc_curve_analysis(data)
+            feature_importance_analysis(data)
             create_visualizations(data)
 
         elif choice == "0":
@@ -905,7 +1211,7 @@ def main():
             break
 
         else:
-            print("\n⚠️ Invalid choice. Please enter a number from 0 to 10.")
+            print("\n⚠️ Invalid choice. Please enter a number from 0 to 12.")
 
 
 if __name__ == "__main__":
