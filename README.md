@@ -361,7 +361,7 @@ Possible future versions of StatMate may include:
 
 ## 👨‍💻 Author
 
-**Deon**
+**Kyere Ofosu Gideon**
 
 Statistics graduate and aspiring data professional with interests in:
 
