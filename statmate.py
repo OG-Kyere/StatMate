@@ -493,6 +493,27 @@ def print_vif_guidance(vif_results):
         print("\nNo concerning collinearity was detected (all VIF values are below 5).")
 
 
+def has_recommended_sample_size(complete_rows, predictor_count):
+    """Return whether a model meets a 10-rows-per-predictor rule of thumb."""
+
+    return complete_rows >= predictor_count * 10
+
+
+def print_sample_size_guidance(complete_rows, predictor_count):
+    """Explain when a fitted custom model has limited data for its complexity."""
+
+    rows_per_predictor = complete_rows / predictor_count
+    print(
+        f"\nSample-size check: {complete_rows} complete rows for {predictor_count} predictor(s) "
+        f"({rows_per_predictor:.1f} rows per predictor)."
+    )
+    if not has_recommended_sample_size(complete_rows, predictor_count):
+        print(
+            "Warning: This is below the common rule of thumb of 10 complete rows per predictor. "
+            "Use fewer predictors or collect more data for more stable estimates."
+        )
+
+
 def select_custom_regression_variables(data):
     """Prompt the user to select numeric outcome and predictor columns."""
 
@@ -566,6 +587,7 @@ def custom_regression_analysis(data):
     print(f"\nOutcome: {outcome}")
     print("Predictors: " + ", ".join(map(str, predictors)))
     print(f"Complete rows used: {complete_rows} of {len(data)}")
+    print_sample_size_guidance(complete_rows, len(predictors))
     print_vif_guidance(calculate_vif(data, outcome, predictors))
     print_regression_results(model, outcome)
 

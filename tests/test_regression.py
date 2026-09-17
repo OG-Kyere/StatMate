@@ -7,6 +7,7 @@ import pandas as pd
 from statmate import (
     calculate_vif,
     fit_linear_regression,
+    has_recommended_sample_size,
     load_dataset,
     select_custom_regression_variables,
 )
@@ -72,6 +73,10 @@ class RegressionTests(unittest.TestCase):
         vif_results = calculate_vif(data, "outcome", ["first", "second"])
 
         self.assertTrue((vif_results["VIF"] >= 10).any())
+
+    def test_sample_size_rule_of_thumb_uses_ten_rows_per_predictor(self):
+        self.assertTrue(has_recommended_sample_size(20, 2))
+        self.assertFalse(has_recommended_sample_size(19, 2))
 
     def test_custom_variable_picker_accepts_numeric_outcome_and_predictors(self):
         data = pd.DataFrame(
