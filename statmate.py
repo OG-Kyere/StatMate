@@ -447,6 +447,52 @@ def fit_linear_regression(data, outcome, predictors):
     return sm.OLS(analysis_data[outcome], X).fit(), len(analysis_data)
 
 
+def calculate_vif(data, outcome, predictors):
+    """Calculate VIF values using the same complete rows as the regression."""
+
+    analysis_data = (
+        data[[outcome, *predictors]]
+        .replace([np.inf, -np.inf], np.nan)
+        .dropna()
+    )
+    predictor_data = sm.add_constant(analysis_data[predictors], has_constant="add")
+
+    return pd.DataFrame(
+        {
+            "Predictor": predictors,
+            "VIF": [
+                variance_inflation_factor(predictor_data.to_numpy(dtype=float), index + 1)
+                for index in range(len(predictors))
+            ],
+        }
+    )
+
+
+def print_vif_guidance(vif_results):
+    """Display actionable collinearity guidance for custom regression."""
+
+    print("\nCollinearity check (Variance Inflation Factor):")
+    print(vif_results.to_string(index=False, formatters={"VIF": "{:.2f}".format}))
+
+    high_vif = vif_results[vif_results["VIF"] >= 10]
+    moderate_vif = vif_results[(vif_results["VIF"] >= 5) & (vif_results["VIF"] < 10)]
+
+    if not high_vif.empty:
+        print(
+            "\nWarning: High collinearity (VIF ≥ 10) was detected for: "
+            + ", ".join(high_vif["Predictor"].astype(str))
+            + ". Consider removing or replacing overlapping predictors, then run option 6 again."
+        )
+    elif not moderate_vif.empty:
+        print(
+            "\nNote: Moderate collinearity (VIF 5–10) was detected for: "
+            + ", ".join(moderate_vif["Predictor"].astype(str))
+            + ". Interpret these coefficients with care."
+        )
+    else:
+        print("\nNo concerning collinearity was detected (all VIF values are below 5).")
+
+
 def select_custom_regression_variables(data):
     """Prompt the user to select numeric outcome and predictor columns."""
 
@@ -520,6 +566,7 @@ def custom_regression_analysis(data):
     print(f"\nOutcome: {outcome}")
     print("Predictors: " + ", ".join(map(str, predictors)))
     print(f"Complete rows used: {complete_rows} of {len(data)}")
+    print_vif_guidance(calculate_vif(data, outcome, predictors))
     print_regression_results(model, outcome)
 
 

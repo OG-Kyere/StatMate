@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 from statmate import (
+    calculate_vif,
     fit_linear_regression,
     load_dataset,
     select_custom_regression_variables,
@@ -58,6 +59,19 @@ class RegressionTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "perfectly collinear"):
             fit_linear_regression(data, "outcome", ["first", "second"])
+
+    def test_vif_identifies_high_near_collinearity(self):
+        data = pd.DataFrame(
+            {
+                "outcome": [5, 7, 9, 11, 13, 15],
+                "first": [1, 2, 3, 4, 5, 6],
+                "second": [1.1, 1.9, 3.1, 3.9, 5.1, 5.9],
+            }
+        )
+
+        vif_results = calculate_vif(data, "outcome", ["first", "second"])
+
+        self.assertTrue((vif_results["VIF"] >= 10).any())
 
     def test_custom_variable_picker_accepts_numeric_outcome_and_predictors(self):
         data = pd.DataFrame(
