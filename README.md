@@ -133,6 +133,8 @@ Custom datasets support the reusable exploration options:
 * Descriptive Statistics
 * Correlation Analysis
 * Regression Analysis — choose one numeric outcome and one or more numeric predictors from a numbered list. Rows missing a selected value are excluded from that model only. StatMate displays a sample-size check and VIF collinearity check: values of 5–10 warrant care, while values of 10 or more suggest reselecting overlapping predictors.
+* Custom regression diagnostics — saves residual Q-Q and residuals-vs-fitted plots, then reports Shapiro-Wilk, Breusch-Pagan, Durbin-Watson, and Cook's-distance influence checks.
+* Custom regression exports — saves coefficient estimates, diagnostic statistics, and VIF results as CSV files in `results/`.
 
 The hypothesis testing, machine-learning, prediction, visualization, and report options remain Iris-specific during this phase, so StatMate prevents them from running against incompatible custom columns. Choose **17. Switch Back to Iris Dataset** at any time to restore the complete original workflow.
 

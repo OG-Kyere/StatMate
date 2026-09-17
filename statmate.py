@@ -514,6 +514,140 @@ def print_sample_size_guidance(complete_rows, predictor_count):
         )
 
 
+def calculate_regression_diagnostics(model):
+    """Return assumption and influence statistics for a fitted OLS model."""
+
+    residuals = model.resid
+    bp_statistic, bp_p_value, _, _ = het_breuschpagan(residuals, model.model.exog)
+    cook_distances = model.get_influence().cooks_distance[0]
+    cook_threshold = 4 / len(residuals)
+    shapiro_statistic, shapiro_p_value = shapiro(residuals)
+
+    return {
+        "shapiro_statistic": shapiro_statistic,
+        "shapiro_p_value": shapiro_p_value,
+        "breusch_pagan_statistic": bp_statistic,
+        "breusch_pagan_p_value": bp_p_value,
+        "durbin_watson": durbin_watson(residuals),
+        "cook_threshold": cook_threshold,
+        "influential_observations": int((cook_distances > cook_threshold).sum()),
+    }
+
+
+def save_custom_regression_diagnostics(model):
+    """Print and save residual diagnostics for a custom regression model."""
+
+    diagnostics = calculate_regression_diagnostics(model)
+    residuals = model.resid
+    fitted_values = model.fittedvalues
+
+    print("\nRegression diagnostics:")
+    print(
+        f"Shapiro-Wilk p-value: {diagnostics['shapiro_p_value']:.4f} "
+        "(values below 0.05 suggest non-normal residuals)"
+    )
+    print(
+        f"Breusch-Pagan p-value: {diagnostics['breusch_pagan_p_value']:.4f} "
+        "(values below 0.05 suggest unequal residual variance)"
+    )
+    print(
+        f"Durbin-Watson: {diagnostics['durbin_watson']:.4f} "
+        "(values near 2 suggest little first-order autocorrelation)"
+    )
+    print(
+        f"Potentially influential observations: {diagnostics['influential_observations']} "
+        f"(Cook's distance threshold: {diagnostics['cook_threshold']:.4f})"
+    )
+
+    os.makedirs("figures", exist_ok=True)
+
+    figure, axis = plt.subplots(figsize=(8, 6))
+    sm.qqplot(residuals, line="45", fit=True, ax=axis)
+    axis.set_title("Custom Regression Q-Q Plot of Residuals")
+    figure.tight_layout()
+    figure.savefig("figures/custom_regression_qq_plot.png", dpi=300, bbox_inches="tight")
+    plt.close(figure)
+
+    figure, axis = plt.subplots(figsize=(8, 6))
+    axis.scatter(fitted_values, residuals)
+    axis.axhline(y=0, linestyle="--")
+    axis.set_xlabel("Fitted Values")
+    axis.set_ylabel("Residuals")
+    axis.set_title("Custom Regression Residuals vs Fitted Values")
+    figure.tight_layout()
+    figure.savefig("figures/custom_regression_residuals_vs_fitted.png", dpi=300, bbox_inches="tight")
+    plt.close(figure)
+
+    print("Diagnostic plots saved to:")
+    print("figures/custom_regression_qq_plot.png")
+    print("figures/custom_regression_residuals_vs_fitted.png")
+
+    return diagnostics
+
+
+def save_custom_regression_results(
+    model, outcome, predictors, complete_rows, vif_results, diagnostics, output_directory="results"
+):
+    """Save reusable tables for the most recently fitted custom regression."""
+
+    output_path = Path(output_directory)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    confidence_intervals = model.conf_int()
+    coefficient_results = pd.DataFrame(
+        {
+            "Variable": model.params.index,
+            "Coefficient": model.params.values,
+            "Standard Error": model.bse.values,
+            "t Statistic": model.tvalues.values,
+            "p Value": model.pvalues.values,
+            "CI Lower": confidence_intervals.iloc[:, 0].values,
+            "CI Upper": confidence_intervals.iloc[:, 1].values,
+        }
+    )
+    coefficient_path = output_path / "custom_regression_coefficients.csv"
+    coefficient_results.to_csv(coefficient_path, index=False)
+
+    diagnostic_results = pd.DataFrame(
+        {
+            "Metric": [
+                "Outcome",
+                "Predictors",
+                "Complete rows",
+                "R-squared",
+                "Adjusted R-squared",
+                "Model F-test p-value",
+                "Shapiro-Wilk p-value",
+                "Breusch-Pagan p-value",
+                "Durbin-Watson",
+                "Influential observations",
+            ],
+            "Value": [
+                outcome,
+                ", ".join(map(str, predictors)),
+                complete_rows,
+                model.rsquared,
+                model.rsquared_adj,
+                model.f_pvalue,
+                diagnostics["shapiro_p_value"],
+                diagnostics["breusch_pagan_p_value"],
+                diagnostics["durbin_watson"],
+                diagnostics["influential_observations"],
+            ],
+        }
+    )
+    diagnostics_path = output_path / "custom_regression_diagnostics.csv"
+    diagnostic_results.to_csv(diagnostics_path, index=False)
+
+    vif_path = output_path / "custom_regression_vif.csv"
+    vif_results.to_csv(vif_path, index=False)
+
+    print("Custom regression results saved to:")
+    print(coefficient_path)
+    print(diagnostics_path)
+    print(vif_path)
+
+
 def select_custom_regression_variables(data):
     """Prompt the user to select numeric outcome and predictor columns."""
 
@@ -588,8 +722,13 @@ def custom_regression_analysis(data):
     print("Predictors: " + ", ".join(map(str, predictors)))
     print(f"Complete rows used: {complete_rows} of {len(data)}")
     print_sample_size_guidance(complete_rows, len(predictors))
-    print_vif_guidance(calculate_vif(data, outcome, predictors))
+    vif_results = calculate_vif(data, outcome, predictors)
+    print_vif_guidance(vif_results)
     print_regression_results(model, outcome)
+    diagnostics = save_custom_regression_diagnostics(model)
+    save_custom_regression_results(
+        model, outcome, predictors, complete_rows, vif_results, diagnostics
+    )
 
 
 def regression_analysis(data):
