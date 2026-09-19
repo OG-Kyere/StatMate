@@ -1,273 +1,21 @@
 # StatMate — Statistical Analysis Assistant
 
-StatMate is a Python-based statistical analysis assistant designed to bring common statistical and machine learning workflows into one simple command-line application.
+StatMate is a Python CLI for statistics and machine learning. It starts with Scikit-learn's Iris dataset (150 flowers, four measurements, three species) and accepts custom CSV and Excel files.
 
-The project starts with the **Iris dataset** from Scikit-learn and demonstrates how statistical analysis, hypothesis testing, regression, machine learning, model evaluation, and visualization can be combined into a practical data-analysis workflow. It can also load your own CSV or Excel dataset for reusable data exploration.
+## Installation
 
----
-
-## 🚀 Features
-
-### 📊 Statistical Analysis
-
-StatMate currently provides:
-
-* Dataset exploration
-* Descriptive statistics
-* Pearson correlation analysis
-* CSV and Excel dataset loading with validation and data profiling
-* Shapiro-Wilk normality testing
-* One-way ANOVA
-* Tukey HSD post-hoc analysis
-* Multiple linear regression using Ordinary Least Squares (OLS)
-
-### 🤖 Machine Learning
-
-StatMate includes several classification models:
-
-* Logistic Regression
-* K-Nearest Neighbors (KNN)
-* Decision Tree
-* Random Forest
-
-The application evaluates models using:
-
-* Accuracy
-* Precision
-* Recall
-* F1-score
-* Accuracy standard deviation
-* 5-fold stratified cross-validation
-
-### 📈 ROC-AUC Analysis
-
-StatMate performs ROC-AUC analysis using **5-fold cross-validation** and out-of-fold predicted probabilities.
-
-The analysis:
-
-* Generates one-vs-rest ROC curves
-* Calculates macro-average ROC curves
-* Calculates macro-average AUC
-* Compares the classification models
-* Saves ROC curves as a PNG image
-* Saves AUC results as a CSV file
-
-### 🌳 Feature Importance
-
-StatMate uses a Random Forest classifier to investigate the relative importance of the four flower measurements.
-
-The analysis:
-
-* Calculates feature importance scores
-* Ranks the predictors
-* Displays the results in the terminal
-* Creates a feature-importance visualization
-* Saves the results as a CSV file
-
-### 🔮 New Flower Prediction
-
-Users can enter measurements for a new flower:
-
-* Sepal length
-* Sepal width
-* Petal length
-* Petal width
-
-StatMate then uses a Logistic Regression model to predict the flower species.
-
----
-
-## 📉 Data Visualization
-
-StatMate generates visualizations including:
-
-* Feature distribution plots
-* Boxplots
-* Correlation heatmaps
-* Petal-length comparisons by species
-* Classification confusion matrices
-* Model-performance comparisons
-* ROC curves
-* Random Forest feature importance
-
-Generated visualizations are stored in the `figures/` directory.
-
----
-
-## 🗂️ Dataset
-
-StatMate uses the **Iris dataset** provided by Scikit-learn.
-
-The dataset contains **150 observations** across three Iris species:
-
-* Setosa
-* Versicolor
-* Virginica
-
-Four numerical measurements are used:
-
-| Feature      | Description                        |
-| ------------ | ---------------------------------- |
-| Sepal Length | Length of the sepal in centimetres |
-| Sepal Width  | Width of the sepal in centimetres  |
-| Petal Length | Length of the petal in centimetres |
-| Petal Width  | Width of the petal in centimetres  |
-
-The dataset is loaded directly through Scikit-learn:
-
-```python
-from sklearn.datasets import load_iris
-
-iris = load_iris(as_frame=True)
-```
-
-No external CSV download is required.
-
-### Load your own dataset
-
-From the StatMate menu, choose **16. Load Custom CSV/Excel Dataset** and enter the full path to a `.csv`, `.xlsx`, or `.xls` file. StatMate checks that the file exists, has a supported format, contains rows and uniquely named columns, then displays its data types, missing values, detected numerical/categorical variables, and a five-row preview.
-
-Custom datasets support the reusable exploration options:
-
-* Explore Dataset
-* Descriptive Statistics
-* Correlation Analysis
-* Regression Analysis — choose one numeric outcome and one or more numeric predictors from a numbered list. Rows missing a selected value are excluded from that model only. StatMate displays a sample-size check and VIF collinearity check: values of 5–10 warrant care, while values of 10 or more suggest reselecting overlapping predictors.
-* Custom regression diagnostics — saves residual Q-Q and residuals-vs-fitted plots, then reports Shapiro-Wilk, Breusch-Pagan, Durbin-Watson, and Cook's-distance influence checks.
-* Custom regression exports — saves coefficient estimates, diagnostic statistics, and VIF results as CSV files in `results/`.
-
-The hypothesis testing, machine-learning, prediction, visualization, and report options remain Iris-specific during this phase, so StatMate prevents them from running against incompatible custom columns. Choose **17. Switch Back to Iris Dataset** at any time to restore the complete original workflow.
-
----
-
-## 🔬 Statistical Workflow
-
-StatMate follows a structured statistical-analysis workflow:
-
-```text
-Load Dataset
-     ↓
-Explore Data
-     ↓
-Descriptive Statistics
-     ↓
-Correlation Analysis
-     ↓
-Normality Testing
-     ↓
-ANOVA
-     ↓
-Tukey HSD
-     ↓
-Regression Analysis
-```
-
-This provides a progression from basic data exploration to inferential statistical analysis.
-
----
-
-## 🤖 Machine Learning Workflow
-
-The machine-learning workflow follows:
-
-```text
-Prepare Features
-      ↓
-Train/Test Split
-      ↓
-Feature Scaling
-      ↓
-Model Training
-      ↓
-Model Evaluation
-      ↓
-Cross-Validation
-      ↓
-Model Comparison
-      ↓
-ROC-AUC Analysis
-      ↓
-Feature Importance
-      ↓
-New Flower Prediction
-```
-
-This demonstrates several important concepts used in applied machine learning.
-
----
-
-## 📁 Project Structure
-
-```text
-StatMate/
-│
-├── statmate.py
-├── README.md
-├── requirements.txt
-├── .gitignore
-│
-├── figures/
-│   ├── distributions.png
-│   ├── boxplots.png
-│   ├── correlation_heatmap.png
-│   ├── petal_length_by_species.png
-│   ├── confusion_matrix.png
-│   ├── model_comparison.png
-│   ├── roc_curves.png
-│   └── feature_importance.png
-│
-└── results/
-    ├── model_comparison.csv
-    ├── roc_auc_results.csv
-    └── feature_importance.csv
-```
-
----
-
-## ⚙️ Installation
-
-Clone the repository:
-
-```bash
+```sh
 git clone https://github.com/OG-Kyere/StatMate.git
-```
-
-Navigate into the project:
-
-```bash
 cd StatMate
-```
-
-Install the required packages:
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## ▶️ Running StatMate
-
-Run the application with:
-
-```bash
+python -m pip install -r requirements.txt
 python statmate.py
 ```
 
-On Windows, if the `python` command is unavailable, you can use:
+On Windows, use `py` instead of `python` if needed. Excel loading supports `.xlsx` (openpyxl) and `.xls` (xlrd), reading the first worksheet. CSV decoding falls back to Latin-1 if UTF-8 fails.
 
-```bash
-py statmate.py
-```
-
-You will be presented with an interactive menu:
+## Menu
 
 ```text
-============================================================
-                    STATMATE
-          Statistical Analysis Assistant
-============================================================
-
 1. Explore Dataset
 2. Descriptive Statistics
 3. Correlation Analysis
@@ -280,124 +28,91 @@ You will be presented with an interactive menu:
 10. Feature Importance
 11. Predict New Flower
 12. Run Complete Analysis
+13. Generate Statistical Report
+14. Generate HTML Report
+15. Regression Diagnostics
+16. Load Custom CSV/Excel Dataset
+17. Switch Back to Iris Dataset
 0. Exit
 ```
 
----
+Option 16 validates the file, empty data and column names, then profiles types, missing values and a preview. Option 17 restores Iris. Custom datasets support options 1–6. Options 7–15 remain Iris-specific; custom regression diagnostics run within option 6.
 
-## 📊 Output Files
+## Current features
 
-StatMate automatically saves important analysis results.
+### Correlation
 
-### Model Comparison
+Pearson analysis selects real numeric columns and removes missing values and infinities separately for each pair. It prints pair counts, coefficients and unadjusted p-values. At least three paired observations are required; constant variables (including those constant only after pairwise cleaning) and non-finite results are skipped with a reason. The matrix uses the same observations and displays `NaN` for unavailable results. Fewer than two numeric columns returns a helpful message. P-values are exploratory and are not corrected for multiple comparisons.
+
+### Hypothesis testing
+
+Iris retains its original petal-length Shapiro-Wilk, ANOVA and Tukey HSD workflow without extra prompts.
+
+For custom data, options 4 and 5 offer numbered numeric-response and categorical-group selections. Text, category and boolean group columns are supported. Numeric group codes must be converted to text/category before loading. Enter cancels; invalid input returns to the menu.
+
+Only rows missing a selected variable or containing non-finite responses are excluded. Every observed group must retain at least three values with within-group variation. An entirely missing group is not silently discarded.
+
+The CLI reports group sizes, Shapiro-Wilk normality and median-centered Levene variance checks, using alpha 0.05:
+
+- No detected non-normality: Welch t-test for two groups; ordinary ANOVA for three or more if Levene detects no variance difference, otherwise Welch ANOVA.
+- Detected non-normality or unassessed normality: two-sided Mann-Whitney U for two groups, Kruskal-Wallis for three or more. This CLI requires at least five values per group for Kruskal-Wallis.
+- Option 5 runs post-hoc tests only after a significant omnibus test with at least three groups: Tukey HSD after ordinary ANOVA, Holm-adjusted pairwise Welch tests after Welch ANOVA, or Holm-adjusted pairwise Mann-Whitney tests after Kruskal-Wallis.
+
+Independent observations are required; these tests are not for paired/repeated measurements. Screening is guidance, not proof of assumptions, especially in small samples. Rank tests compare distributions, not necessarily means or medians; tied/small-sample rank p-values can be approximate. Shapiro screening is skipped above 5,000 values per group and rank tests are used because [SciPy documents reduced p-value accuracy above 5,000](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.shapiro.html). Welch ANOVA uses [Statsmodels' unequal-variance implementation](https://www.statsmodels.org/stable/generated/statsmodels.stats.oneway.anova_oneway.html).
+
+### Regression, ML and reporting
+
+Custom OLS offers numeric outcome/predictor selection, complete finite rows, constant and perfect-collinearity checks, VIF, sample-size guidance, coefficient exports, and diagnostics. Diagnostics include Shapiro-Wilk, Breusch-Pagan, Durbin-Watson, Cook's distance, Q-Q plots and residuals versus fitted values.
+
+Iris supports Logistic Regression, KNN, Decision Tree and Random Forest; scaled pipelines; train/test evaluation; five-fold stratified cross-validation; accuracy, precision, recall and F1 comparisons; out-of-fold one-vs-rest and macro-average ROC-AUC; feature importance; and new-flower prediction.
+
+Text and HTML reports already exist. Option 12 generates the complete Iris workflow and supporting files. Individual reports can use existing saved results; rerun the relevant analyses to refresh those files and HTML-linked figures.
+
+## Project structure
 
 ```text
-results/model_comparison.csv
+StatMate/
+├── statmate.py              # CLI, loading, statistics, regression, ML, reporting
+├── README.md
+├── requirements.txt
+├── .gitignore
+├── tests/
+│   ├── test_regression.py
+│   └── test_statistics.py
+├── figures/                 # Generated PNGs
+├── results/                 # Generated CSVs
+└── reports/                 # Generated text and HTML
 ```
 
-Contains cross-validation performance metrics for the four machine-learning models.
+## Outputs
 
-### ROC-AUC Results
+Paths are relative to the working directory. Rerunning an analysis overwrites its named files. Correlation and hypothesis results print to the terminal; they do not yet export files.
 
-```text
-results/roc_auc_results.csv
+| Directory | Files |
+| --- | --- |
+| `results/` | `model_comparison.csv`, `roc_auc_results.csv`, `feature_importance.csv`, `vif_results.csv` |
+| `results/` (custom OLS) | `custom_regression_coefficients.csv`, `custom_regression_diagnostics.csv`, `custom_regression_vif.csv` |
+| `figures/` | `distributions.png`, `boxplots.png`, `correlation_heatmap.png`, `petal_length_by_species.png`, `confusion_matrix.png`, `model_comparison.png`, `roc_curves.png`, `feature_importance.png`, `regression_qq_plot.png`, `residuals_vs_fitted.png` |
+| `figures/` (custom OLS) | `custom_regression_qq_plot.png`, `custom_regression_residuals_vs_fitted.png` |
+| `reports/` | `statmate_report.txt`, `statmate_report.html` |
+
+## Tests
+
+```sh
+python -m unittest discover -s tests -v
 ```
 
-Contains macro-average AUC values for each classification model.
+Tests cover regression fitting/diagnostics/exports, pairwise correlation cleaning, degenerate data, group-test selection, post-hoc routing, invalid/cancelled selections, custom menu routing and the original Iris tests.
 
-### Feature Importance
+## Future improvements
 
-```text
-results/feature_importance.csv
-```
+- Generalize classification, predictions, visualization and reports to custom datasets.
+- Split `statmate.py` into loading, statistics, regression, ML, reporting and CLI modules.
+- Add effect sizes, confidence intervals, optional correlation multiplicity correction and hypothesis exports.
+- Support paired/repeated-measures designs and richer small-sample inference.
+- Add hyperparameter tuning, regression ML models and feature selection.
+- Add PDF export and interactive dashboards.
 
-Contains Random Forest feature-importance scores.
+## Author
 
-Visualizations are saved in:
-
-```text
-figures/
-```
-
----
-
-## 🛠️ Technologies Used
-
-* **Python**
-* **Pandas** — data manipulation
-* **NumPy** — numerical computation
-* **Matplotlib** — visualization
-* **Seaborn** — statistical visualization
-* **SciPy** — statistical tests
-* **Statsmodels** — statistical modelling
-* **Scikit-learn** — machine learning
-
----
-
-## 🎯 Learning Objectives
-
-This project was developed to strengthen practical understanding of:
-
-* Exploratory Data Analysis (EDA)
-* Descriptive statistics
-* Statistical hypothesis testing
-* Correlation analysis
-* Analysis of variance
-* Post-hoc testing
-* Linear regression
-* Classification
-* Feature scaling
-* Cross-validation
-* Model evaluation
-* ROC-AUC analysis
-* Feature importance
-* Data visualization
-* Python programming
-* Git and GitHub
-
----
-
-## 🔮 Future Improvements
-
-Possible future versions of StatMate may include:
-
-* Automated statistical report generation
-* Additional statistical tests
-* More classification algorithms
-* Regression machine-learning models
-* Hyperparameter tuning
-* Automated model selection
-* Interactive dashboards
-* Support for user-uploaded datasets
-* More advanced feature-selection techniques
-* Exportable PDF/HTML analysis reports
-* Improved command-line interface
-
----
-
-## 👨‍💻 Author
-
-**Kyere Ofosu Gideon**
-
-Statistics graduate and aspiring data professional with interests in:
-
-* Statistical modelling
-* Data analysis
-* Machine learning
-* Data visualization
-* Risk analytics
-* Applied statistics
-
-This project is part of my continued development in statistical programming and data science.
-
----
-
-## 📌 Project Status
-
-StatMate is an ongoing learning and portfolio project.
-
-The current version combines **classical statistical analysis with machine-learning techniques**, providing a practical demonstration of an end-to-end statistical data-analysis workflow.
-
----
-
-⭐ If you find the project useful, feel free to explore the repository and follow the development of StatMate.
+**Kyere Ofosu Gideon** — statistics graduate and aspiring data professional. StatMate is an ongoing learning and portfolio project combining classical statistics and machine learning.
