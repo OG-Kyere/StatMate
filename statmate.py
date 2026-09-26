@@ -1,5 +1,6 @@
 # Backwards-compatible public symbols used by existing integrations and tests.
 import matplotlib.pyplot as plt
+import pandas as pd
 from scipy.stats import shapiro, f_oneway
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
