@@ -36,7 +36,7 @@ On Windows, use `py` instead of `python` if needed. Excel loading supports `.xls
 0. Exit
 ```
 
-Option 16 validates the file, empty data and column names, then profiles types, missing values and a preview. Option 17 restores Iris. Custom datasets support options 1–6. Options 7–15 remain Iris-specific; custom regression diagnostics run within option 6.
+Option 16 validates the file, empty data and column names, then profiles types, missing values and a preview. Option 17 restores Iris. Custom datasets support options 1–7. Option 7 provides reusable classification with mixed numeric/categorical predictors; options 8–15 remain Iris-specific. Custom regression diagnostics run within option 6.
 
 ## Current features
 
@@ -60,6 +60,14 @@ The CLI reports group sizes, Shapiro-Wilk normality and median-centered Levene v
 
 Independent observations are required; these tests are not for paired/repeated measurements. Screening is guidance, not proof of assumptions, especially in small samples. Rank tests compare distributions, not necessarily means or medians; tied/small-sample rank p-values can be approximate. Shapiro screening is skipped above 5,000 values per group and rank tests are used because [SciPy documents reduced p-value accuracy above 5,000](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.shapiro.html). Welch ANOVA uses [Statsmodels' unequal-variance implementation](https://www.statsmodels.org/stable/generated/statsmodels.stats.oneway.anova_oneway.html).
 
+### Custom classification
+
+For uploaded datasets, option 7 can run a reusable classification workflow. Choose a detected target and one or more predictors; numeric predictors are median-imputed and standardized, while categorical predictors are most-frequent-imputed and one-hot encoded. All preprocessing is fitted inside each cross-validation fold to avoid data leakage.
+
+StatMate compares Logistic Regression, K-Nearest Neighbors, Decision Tree and Random Forest using stratified cross-validation. The number of folds automatically drops below five when the smallest target class requires it. Accuracy, macro precision, macro recall, macro F1 and accuracy variability are saved to `results/custom_classification_results.csv`.
+
+This first StatMate 2.0 ML workflow focuses on classification. Custom ROC-AUC, feature importance, prediction and regression-ML workflows remain future work.
+
 ### Regression, ML and reporting
 
 Custom OLS offers numeric outcome/predictor selection, complete finite rows, constant and perfect-collinearity checks, VIF, sample-size guidance, coefficient exports, and diagnostics. Diagnostics include Shapiro-Wilk, Breusch-Pagan, Durbin-Watson, Cook's distance, Q-Q plots and residuals versus fitted values.
@@ -72,13 +80,15 @@ Text and HTML reports already exist. Option 12 generates the complete Iris workf
 
 ```text
 StatMate/
-├── statmate.py              # CLI, loading, statistics, regression, ML, reporting
+├── statmate.py              # CLI, loading, statistics, regression, Iris ML, reporting
+├── custom_ml.py             # Reusable custom-dataset classification engine
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
 ├── tests/
 │   ├── test_regression.py
-│   └── test_statistics.py
+│   ├── test_statistics.py
+│   └── test_custom_ml.py
 ├── figures/                 # Generated PNGs
 ├── results/                 # Generated CSVs
 └── reports/                 # Generated text and HTML
@@ -90,7 +100,7 @@ Paths are relative to the working directory. Rerunning an analysis overwrites it
 
 | Directory | Files |
 | --- | --- |
-| `results/` | `model_comparison.csv`, `roc_auc_results.csv`, `feature_importance.csv`, `vif_results.csv` |
+| `results/` | `model_comparison.csv`, `roc_auc_results.csv`, `feature_importance.csv`, `vif_results.csv`, `custom_classification_results.csv` |
 | `results/` (custom OLS) | `custom_regression_coefficients.csv`, `custom_regression_diagnostics.csv`, `custom_regression_vif.csv` |
 | `figures/` | `distributions.png`, `boxplots.png`, `correlation_heatmap.png`, `petal_length_by_species.png`, `confusion_matrix.png`, `model_comparison.png`, `roc_curves.png`, `feature_importance.png`, `regression_qq_plot.png`, `residuals_vs_fitted.png` |
 | `figures/` (custom OLS) | `custom_regression_qq_plot.png`, `custom_regression_residuals_vs_fitted.png` |
@@ -102,11 +112,11 @@ Paths are relative to the working directory. Rerunning an analysis overwrites it
 python -m unittest discover -s tests -v
 ```
 
-Tests cover regression fitting/diagnostics/exports, pairwise correlation cleaning, degenerate data, group-test selection, post-hoc routing, invalid/cancelled selections, custom menu routing and the original Iris tests.
+Tests cover regression fitting/diagnostics/exports, pairwise correlation cleaning, degenerate data, group-test selection, post-hoc routing, custom classification preprocessing/model comparison, invalid inputs, custom menu routing and the original Iris tests.
 
 ## Future improvements
 
-- Generalize classification, predictions, visualization and reports to custom datasets.
+- Extend custom classification with ROC-AUC, feature importance, prediction, visualization and reports.
 - Split `statmate.py` into loading, statistics, regression, ML, reporting and CLI modules.
 - Add effect sizes, confidence intervals, optional correlation multiplicity correction and hypothesis exports.
 - Support paired/repeated-measures designs and richer small-sample inference.

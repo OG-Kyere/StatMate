@@ -20,6 +20,8 @@ from statsmodels.stats.stattools import durbin_watson
 import statsmodels.formula.api as smf
 import statsmodels.api as sm
 
+from custom_ml import custom_classification_analysis
+
 from sklearn.datasets import load_iris
 from sklearn.model_selection import (
     train_test_split,
@@ -2729,7 +2731,7 @@ def main():
 
         choice = input("\nEnter your choice: ").strip()
 
-        if choice in {"7", "8", "9", "10", "11", "12", "13", "14", "15"} and not iris_workflow:
+        if choice in {"8", "9", "10", "11", "12", "13", "14", "15"} and not iris_workflow:
             print(
                 "\nWarning: This option currently uses Iris-specific variables. "
                 "You can still use Explore Dataset, Descriptive Statistics, and "
@@ -2764,7 +2766,10 @@ def main():
                 custom_regression_analysis(data)
 
         elif choice == "7":
-            machine_learning_analysis(data)
+            if iris_workflow:
+                machine_learning_analysis(data)
+            else:
+                custom_classification_analysis(data)
 
         elif choice == "8":
             compare_models(data)
