@@ -4,7 +4,9 @@ import pandas as pd
 from scipy.stats import shapiro, f_oneway
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
-from custom_complete import custom_complete_analysis as _custom_complete_analysis\n\nfrom custom_ml import (
+from custom_complete import custom_complete_analysis as _custom_complete_analysis
+
+from custom_ml import (
     custom_classification_analysis,
     custom_model_comparison,
     custom_roc_auc_analysis,
