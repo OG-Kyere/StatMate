@@ -5,6 +5,10 @@ from scipy.stats import shapiro, f_oneway
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 from custom_complete import custom_complete_analysis as _custom_complete_analysis
+from custom_reporting import (
+    generate_custom_text_report as _generate_custom_text_report,
+    generate_custom_html_report as _generate_custom_html_report,
+)
 
 from custom_ml import (
     custom_classification_analysis,
