@@ -9,6 +9,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.model_selection import StratifiedKFold, cross_validate
+from sklearn.metrics import make_scorer, precision_score, recall_score, f1_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -110,11 +111,20 @@ def evaluate_classifiers(data, target, predictors, random_state=42):
             n_estimators=200, random_state=random_state
         ),
     }
+    # zero_division=0 makes macro metrics deterministic when a model does not
+    # predict one of the classes in a validation fold (common in small or
+    # imbalanced datasets) while keeping the limitation visible in the score.
     scoring = {
         "accuracy": "accuracy",
-        "precision": "precision_macro",
-        "recall": "recall_macro",
-        "f1": "f1_macro",
+        "precision": make_scorer(
+            precision_score, average="macro", zero_division=0
+        ),
+        "recall": make_scorer(
+            recall_score, average="macro", zero_division=0
+        ),
+        "f1": make_scorer(
+            f1_score, average="macro", zero_division=0
+        ),
     }
 
     rows = []
