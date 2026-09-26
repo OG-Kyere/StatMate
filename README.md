@@ -84,6 +84,7 @@ StatMate/
 ├── statmate_cli.py          # CLI menu, dataset state and command routing
 ├── data_loader.py           # Built-in/custom loading, validation and profiling
 ├── statistics_analysis.py   # Robust correlation and custom group inference
+├── regression_analysis.py   # OLS fitting, VIF, diagnostics and custom regression
 ├── custom_ml.py             # Reusable custom-dataset classification engine
 ├── README.md
 ├── requirements.txt
@@ -122,7 +123,7 @@ Tests cover regression fitting/diagnostics/exports, pairwise correlation cleanin
 ## Future improvements
 
 - Extend custom classification outputs with visualizations and automated reports.
-- Continue the modular refactor by extracting regression, Iris ML and reporting from the backwards-compatible `statmate.py` API.
+- Continue the modular refactor by extracting Iris ML, remaining Iris diagnostics and reporting from the backwards-compatible `statmate.py` API.
 - Add effect sizes, confidence intervals, optional correlation multiplicity correction and hypothesis exports.
 - Support paired/repeated-measures designs and richer small-sample inference.
 - Add hyperparameter tuning, regression ML models and feature selection.
