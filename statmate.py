@@ -20,7 +20,13 @@ from statsmodels.stats.stattools import durbin_watson
 import statsmodels.formula.api as smf
 import statsmodels.api as sm
 
-from custom_ml import custom_classification_analysis
+from custom_ml import (
+    custom_classification_analysis,
+    custom_model_comparison,
+    custom_roc_auc_analysis,
+    custom_feature_importance_analysis,
+    custom_prediction,
+)
 
 from sklearn.datasets import load_iris
 from sklearn.model_selection import (
@@ -2731,7 +2737,7 @@ def main():
 
         choice = input("\nEnter your choice: ").strip()
 
-        if choice in {"8", "9", "10", "11", "12", "13", "14", "15"} and not iris_workflow:
+        if choice in {"12", "13", "14", "15"} and not iris_workflow:
             print(
                 "\nWarning: This option currently uses Iris-specific variables. "
                 "You can still use Explore Dataset, Descriptive Statistics, and "
@@ -2772,16 +2778,28 @@ def main():
                 custom_classification_analysis(data)
 
         elif choice == "8":
-            compare_models(data)
+            if iris_workflow:
+                compare_models(data)
+            else:
+                custom_model_comparison(data)
 
         elif choice == "9":
-            roc_curve_analysis(data)
+            if iris_workflow:
+                roc_curve_analysis(data)
+            else:
+                custom_roc_auc_analysis(data)
 
         elif choice == "10":
-            feature_importance_analysis(data)
+            if iris_workflow:
+                feature_importance_analysis(data)
+            else:
+                custom_feature_importance_analysis(data)
 
         elif choice == "11":
-            predict_new_flower(data)
+            if iris_workflow:
+                predict_new_flower(data)
+            else:
+                custom_prediction(data)
 
         elif choice == "12":
             explore_data(data)
