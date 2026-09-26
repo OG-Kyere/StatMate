@@ -77,5 +77,25 @@ class CustomReportingTests(unittest.TestCase):
         self.assertIn("No applicable results.", html)
 
 
+    def test_text_report_contains_generic_dataset_sections(self):
+        from custom_reporting import generate_custom_text_report
+
+        data = pd.DataFrame({
+            "score": [10.0, 12.0, None, 18.0],
+            "age": [20, 21, 22, 23],
+            "group": ["A", "A", "B", "B"],
+        })
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "report.txt"
+            path = generate_custom_text_report(data, output)
+            report = Path(path).read_text(encoding="utf-8")
+
+        self.assertIn("COLUMN AND MISSING-DATA SUMMARY", report)
+        self.assertIn("DESCRIPTIVE STATISTICS", report)
+        self.assertIn("NUMERIC CORRELATION MATRIX", report)
+        self.assertIn("score", report)
+        self.assertIn("group", report)
+
+
 if __name__ == "__main__":
     unittest.main()
