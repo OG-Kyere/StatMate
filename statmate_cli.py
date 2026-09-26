@@ -38,10 +38,10 @@ def run_cli(api):
 
         choice = input("\nEnter your choice: ").strip()
 
-        if choice in {"13", "14", "15"} and not iris_workflow:
+        if choice == "15" and not iris_workflow:
             print(
                 "\nWarning: This option currently uses Iris-specific variables. "
-                "Custom datasets currently support options 1 through 12."
+                "Custom datasets currently support options 1 through 14."
             )
         elif choice == "1":
             api.explore_data(data)
@@ -83,9 +83,9 @@ def run_cli(api):
             api.generate_report(data)
             api.generate_html_report(data)
         elif choice == "13":
-            api.generate_report(data)
+            api.generate_report(data) if iris_workflow else api.generate_custom_text_report(data)
         elif choice == "14":
-            api.generate_html_report(data)
+            api.generate_html_report(data) if iris_workflow else api.generate_custom_html_report(data)
         elif choice == "15":
             api.regression_diagnostics(data)
         elif choice == "16":
