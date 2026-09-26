@@ -82,12 +82,14 @@ Text and HTML reports already exist. Option 12 generates the complete Iris workf
 StatMate/
 ├── statmate.py              # Public analysis API: loading, statistics, regression, Iris ML, reporting
 ├── statmate_cli.py          # CLI menu, dataset state and command routing
+├── data_loader.py           # Built-in/custom loading, validation and profiling
 ├── custom_ml.py             # Reusable custom-dataset classification engine
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
 ├── tests/
 │   ├── test_cli.py
+│   ├── test_data_loader.py
 │   ├── test_regression.py
 │   ├── test_statistics.py
 │   └── test_custom_ml.py
