@@ -1,3 +1,7 @@
+# Backwards-compatible public symbols used by existing integrations and tests.
+import matplotlib.pyplot as plt
+from scipy.stats import shapiro
+
 from custom_ml import (
     custom_classification_analysis,
     custom_model_comparison,
