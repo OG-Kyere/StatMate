@@ -1,6 +1,6 @@
 # Backwards-compatible public symbols used by existing integrations and tests.
 import matplotlib.pyplot as plt
-from scipy.stats import shapiro
+from scipy.stats import shapiro, f_oneway
 
 from custom_ml import (
     custom_classification_analysis,
