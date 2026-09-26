@@ -38,10 +38,10 @@ def run_cli(api):
 
         choice = input("\nEnter your choice: ").strip()
 
-        if choice in {"12", "13", "14", "15"} and not iris_workflow:
+        if choice in {"13", "14", "15"} and not iris_workflow:
             print(
                 "\nWarning: This option currently uses Iris-specific variables. "
-                "Custom datasets currently support options 1 through 11."
+                "Custom datasets currently support options 1 through 12."
             )
         elif choice == "1":
             api.explore_data(data)
@@ -65,6 +65,8 @@ def run_cli(api):
             api.feature_importance_analysis(data) if iris_workflow else api.custom_feature_importance_analysis(data)
         elif choice == "11":
             api.predict_new_flower(data) if iris_workflow else api.custom_prediction(data)
+        elif choice == "12" and not iris_workflow:
+            api.custom_complete_analysis(data)
         elif choice == "12":
             api.explore_data(data)
             api.descriptive_statistics(data)
