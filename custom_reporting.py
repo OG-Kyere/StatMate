@@ -1,22 +1,10 @@
-"""HTML reporting for arbitrary StatMate custom datasets."""
+"""Text and HTML reporting for arbitrary StatMate custom datasets."""
 
 from html import escape
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
-
-def _table_html(frame):
-    """Render a DataFrame as a compact HTML table."""
-    if frame is None or frame.empty:
-        return "<p>No applicable results.</p>"
-    return frame.to_html(
-        border=0,
-        classes="dataframe",
-        justify="center",
-        escape=True,
-    )
 
 
 def build_custom_report_sections(data):
@@ -43,6 +31,65 @@ def build_custom_report_sections(data):
         "descriptive": descriptive,
         "correlation": correlation,
     }
+
+
+def _table_html(frame):
+    """Render a DataFrame as a compact HTML table."""
+    if frame is None or frame.empty:
+        return "<p>No applicable results.</p>"
+    return frame.to_html(
+        border=0,
+        classes="dataframe",
+        justify="center",
+        escape=True,
+    )
+
+
+def _table_text(frame):
+    """Render a DataFrame for the plain-text report."""
+    if frame is None or frame.empty:
+        return "No applicable results."
+    return frame.to_string()
+
+
+def generate_custom_text_report(
+    data,
+    output_path="reports/custom_statmate_report.txt",
+):
+    """Generate a plain-text statistical summary for a custom dataset."""
+    sections = build_custom_report_sections(data)
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    text = f"""STATMATE CUSTOM DATASET REPORT
+{'=' * 60}
+
+DATASET SUMMARY
+Rows: {len(data)}
+Columns: {data.shape[1]}
+Numeric columns: {data.select_dtypes(include="number").shape[1]}
+
+COLUMN AND MISSING-DATA SUMMARY
+{'-' * 60}
+{_table_text(sections["dtype_summary"])}
+
+DESCRIPTIVE STATISTICS
+{'-' * 60}
+{_table_text(sections["descriptive"])}
+
+NUMERIC CORRELATION MATRIX
+{'-' * 60}
+{_table_text(sections["correlation"])}
+
+ANALYSIS SCOPE
+{'-' * 60}
+This automatic report does not guess an outcome, grouping variable, or
+statistical research question. Outcome-dependent analyses remain available
+through StatMate's interactive analysis options.
+"""
+    output.write_text(text, encoding="utf-8")
+    print(f"\nCustom statistical report saved to: {output.as_posix()}")
+    return str(output)
 
 
 def generate_custom_html_report(
