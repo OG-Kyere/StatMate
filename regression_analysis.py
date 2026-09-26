@@ -356,6 +356,14 @@ def custom_regression_analysis(data):
     save_custom_regression_results(
         model, outcome, predictors, complete_rows, vif_results, diagnostics
     )
+    return {
+        "outcome": outcome,
+        "predictors": predictors,
+        "complete_rows": complete_rows,
+        "model": model,
+        "vif": vif_results,
+        "diagnostics": diagnostics,
+    }
 
 
 def regression_analysis(data):
