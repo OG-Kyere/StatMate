@@ -33,6 +33,50 @@ def build_custom_report_sections(data):
     }
 
 
+def build_session_sections(session=None):
+    """Convert stored analysis results into report-friendly tables."""
+    sections = {}
+    if session is None:
+        return sections
+    results = getattr(session, "results", session if isinstance(session, dict) else {})
+
+    regression = results.get("regression")
+    if regression:
+        model = regression["model"]
+        ci = model.conf_int()
+        sections["regression_summary"] = pd.DataFrame([{
+            "Outcome": regression["outcome"],
+            "Predictors": ", ".join(map(str, regression["predictors"])),
+            "Complete Rows": regression["complete_rows"],
+            "R-squared": model.rsquared,
+            "Adjusted R-squared": model.rsquared_adj,
+            "Model p-value": model.f_pvalue,
+        }])
+        sections["regression_coefficients"] = pd.DataFrame({
+            "Variable": model.params.index,
+            "Coefficient": model.params.values,
+            "Standard Error": model.bse.values,
+            "t Statistic": model.tvalues.values,
+            "p Value": model.pvalues.values,
+            "CI Lower": ci.iloc[:, 0].values,
+            "CI Upper": ci.iloc[:, 1].values,
+        })
+        sections["regression_vif"] = regression["vif"]
+        d = regression["diagnostics"]
+        sections["regression_diagnostics"] = pd.DataFrame([{
+            "Shapiro-Wilk p-value": d["shapiro_p_value"],
+            "Breusch-Pagan p-value": d["breusch_pagan_p_value"],
+            "Durbin-Watson": d["durbin_watson"],
+            "Influential Observations": d["influential_observations"],
+        }])
+
+    classification = results.get("classification")
+    if isinstance(classification, pd.DataFrame):
+        sections["classification"] = classification
+
+    return sections
+
+
 def _table_html(frame):
     """Render a DataFrame as a compact HTML table."""
     if frame is None or frame.empty:
@@ -55,9 +99,11 @@ def _table_text(frame):
 def generate_custom_text_report(
     data,
     output_path="reports/custom_statmate_report.txt",
+    session=None,
 ):
     """Generate a plain-text statistical summary for a custom dataset."""
     sections = build_custom_report_sections(data)
+    session_sections = build_session_sections(session)
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
 
@@ -81,6 +127,17 @@ NUMERIC CORRELATION MATRIX
 {'-' * 60}
 {_table_text(sections["correlation"])}
 
+STORED REGRESSION RESULTS
+{'-' * 60}
+{_table_text(session_sections.get("regression_summary"))}
+{_table_text(session_sections.get("regression_coefficients"))}
+{_table_text(session_sections.get("regression_vif"))}
+{_table_text(session_sections.get("regression_diagnostics"))}
+
+STORED CLASSIFICATION RESULTS
+{'-' * 60}
+{_table_text(session_sections.get("classification"))}
+
 ANALYSIS SCOPE
 {'-' * 60}
 This automatic report does not guess an outcome, grouping variable, or
@@ -95,9 +152,11 @@ through StatMate's interactive analysis options.
 def generate_custom_html_report(
     data,
     output_path="reports/custom_statmate_report.html",
+    session=None,
 ):
     """Generate a self-contained HTML summary for a custom dataset."""
     sections = build_custom_report_sections(data)
+    session_sections = build_session_sections(session)
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
 
@@ -134,6 +193,15 @@ th {{ text-align: center; }}
 
 <h2>Numeric Correlation Matrix</h2>
 {_table_html(sections["correlation"])}
+
+<h2>Stored Regression Results</h2>
+{_table_html(session_sections.get("regression_summary"))}
+{_table_html(session_sections.get("regression_coefficients"))}
+{_table_html(session_sections.get("regression_vif"))}
+{_table_html(session_sections.get("regression_diagnostics"))}
+
+<h2>Stored Classification Results</h2>
+{_table_html(session_sections.get("classification"))}
 
 <h2>Analysis Scope</h2>
 <p class="note">
