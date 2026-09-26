@@ -276,6 +276,7 @@ from regression_analysis import (
     save_custom_regression_results as _save_custom_regression_results,
     select_custom_regression_variables as _select_custom_regression_variables,
     custom_regression_analysis as _custom_regression_analysis,
+    custom_session_regression_diagnostics as _custom_session_regression_diagnostics,
     regression_analysis as _regression_analysis
 )
 
@@ -312,6 +313,11 @@ def select_custom_regression_variables(data):
 
 def custom_regression_analysis(data):
     return _custom_regression_analysis(data)
+
+
+def custom_session_regression_diagnostics(session):
+    return _custom_session_regression_diagnostics(session)
+
 
 def regression_analysis(data):
     return _regression_analysis(data)
