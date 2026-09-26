@@ -36,7 +36,7 @@ On Windows, use `py` instead of `python` if needed. Excel loading supports `.xls
 0. Exit
 ```
 
-Option 16 validates the file, empty data and column names, then profiles types, missing values and a preview. Option 17 restores Iris. Custom datasets support options 1–7. Option 7 provides reusable classification with mixed numeric/categorical predictors; options 8–15 remain Iris-specific. Custom regression diagnostics run within option 6.
+Option 16 validates the file, empty data and column names, then profiles types, missing values and a preview. Option 17 restores Iris. Custom datasets support options 1–11. Options 7–11 provide reusable classification, model comparison, ROC-AUC, feature importance and prediction with mixed numeric/categorical predictors. Options 12–15 remain Iris-specific. Custom regression diagnostics run within option 6.
 
 ## Current features
 
@@ -64,9 +64,9 @@ Independent observations are required; these tests are not for paired/repeated m
 
 For uploaded datasets, option 7 can run a reusable classification workflow. Choose a detected target and one or more predictors; numeric predictors are median-imputed and standardized, while categorical predictors are most-frequent-imputed and one-hot encoded. All preprocessing is fitted inside each cross-validation fold to avoid data leakage.
 
-StatMate compares Logistic Regression, K-Nearest Neighbors, Decision Tree and Random Forest using stratified cross-validation. The number of folds automatically drops below five when the smallest target class requires it. Accuracy, macro precision, macro recall, macro F1 and accuracy variability are saved to `results/custom_classification_results.csv`.
+StatMate compares Logistic Regression, K-Nearest Neighbors, Decision Tree and Random Forest using stratified cross-validation. The number of folds automatically drops below five when the smallest target class requires it. Accuracy, macro precision, macro recall, macro F1 and accuracy variability are saved to `results/custom_classification_results.csv`. Custom ROC-AUC and feature importance are exported to `results/custom_roc_auc.csv` and `results/custom_feature_importance.csv`.
 
-This first StatMate 2.0 ML workflow focuses on classification. Custom ROC-AUC, feature importance, prediction and regression-ML workflows remain future work.
+StatMate 2.0 also supports out-of-fold binary or macro one-vs-rest multiclass ROC-AUC, Random Forest transformed-feature importance, and single-observation Logistic Regression prediction with class probabilities. These workflows reuse leakage-safe preprocessing. Regression-ML workflows remain future work.
 
 ### Regression, ML and reporting
 
@@ -116,7 +116,7 @@ Tests cover regression fitting/diagnostics/exports, pairwise correlation cleanin
 
 ## Future improvements
 
-- Extend custom classification with ROC-AUC, feature importance, prediction, visualization and reports.
+- Extend custom classification outputs with visualizations and automated reports.
 - Split `statmate.py` into loading, statistics, regression, ML, reporting and CLI modules.
 - Add effect sizes, confidence intervals, optional correlation multiplicity correction and hypothesis exports.
 - Support paired/repeated-measures designs and richer small-sample inference.
