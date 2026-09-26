@@ -1,0 +1,103 @@
+"""HTML reporting for arbitrary StatMate custom datasets."""
+
+from html import escape
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+
+def _table_html(frame):
+    """Render a DataFrame as a compact HTML table."""
+    if frame is None or frame.empty:
+        return "<p>No applicable results.</p>"
+    return frame.to_html(
+        border=0,
+        classes="dataframe",
+        justify="center",
+        escape=True,
+    )
+
+
+def build_custom_report_sections(data):
+    """Build non-interactive report tables that are valid for any dataset."""
+    numeric = data.select_dtypes(include="number")
+    dtype_summary = pd.DataFrame({
+        "Column": data.columns.astype(str),
+        "Data Type": [str(dtype) for dtype in data.dtypes],
+        "Missing": data.isna().sum().to_numpy(),
+        "Missing (%)": (data.isna().mean().to_numpy() * 100).round(2),
+        "Unique": [data[column].nunique(dropna=True) for column in data.columns],
+    })
+
+    descriptive = numeric.describe().T if not numeric.empty else pd.DataFrame()
+
+    if numeric.shape[1] >= 2:
+        clean_numeric = numeric.replace([np.inf, -np.inf], np.nan)
+        correlation = clean_numeric.corr()
+    else:
+        correlation = pd.DataFrame()
+
+    return {
+        "dtype_summary": dtype_summary,
+        "descriptive": descriptive,
+        "correlation": correlation,
+    }
+
+
+def generate_custom_html_report(
+    data,
+    output_path="reports/custom_statmate_report.html",
+):
+    """Generate a self-contained HTML summary for a custom dataset."""
+    sections = build_custom_report_sections(data)
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    title = "StatMate Custom Dataset Report"
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{escape(title)}</title>
+<style>
+body {{ font-family: Arial, sans-serif; max-width: 1100px; margin: 40px auto; padding: 0 20px; line-height: 1.5; }}
+h1, h2 {{ margin-top: 1.4em; }}
+.summary {{ padding: 12px 16px; border: 1px solid #ccc; border-radius: 8px; }}
+table {{ border-collapse: collapse; width: 100%; margin: 16px 0 28px; font-size: 0.92rem; }}
+th, td {{ border: 1px solid #ddd; padding: 7px; text-align: right; }}
+th {{ text-align: center; }}
+.note {{ font-size: 0.92rem; }}
+</style>
+</head>
+<body>
+<h1>{escape(title)}</h1>
+<div class="summary">
+<strong>Rows:</strong> {len(data)}<br>
+<strong>Columns:</strong> {data.shape[1]}<br>
+<strong>Numeric columns:</strong> {data.select_dtypes(include="number").shape[1]}
+</div>
+
+<h2>Column and Missing-Data Summary</h2>
+{_table_html(sections["dtype_summary"])}
+
+<h2>Descriptive Statistics</h2>
+{_table_html(sections["descriptive"])}
+
+<h2>Numeric Correlation Matrix</h2>
+{_table_html(sections["correlation"])}
+
+<h2>Analysis Scope</h2>
+<p class="note">
+This automatic report does not guess an outcome, grouping variable, or statistical
+research question. Outcome-dependent hypothesis tests, regression, classification,
+ROC-AUC, feature importance, and prediction remain available through StatMate's
+interactive analysis options.
+</p>
+</body>
+</html>
+"""
+    output.write_text(html, encoding="utf-8")
+    print(f"\nCustom HTML report saved to: {output.as_posix()}")
+    return str(output)
