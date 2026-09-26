@@ -80,12 +80,21 @@ Text and HTML reports already exist. Option 12 generates the complete Iris workf
 
 ```text
 StatMate/
-├── statmate.py              # CLI, loading, statistics, regression, Iris ML, reporting
+├── statmate.py              # Public analysis API: loading, statistics, regression, Iris ML, reporting
+├── statmate_cli.py          # CLI menu, dataset state and command routing
+├── data_loader.py           # Built-in/custom loading, validation and profiling
+├── statistics_analysis.py   # Robust correlation and custom group inference
+├── regression_analysis.py   # OLS fitting, VIF, diagnostics and custom regression
+├── iris_ml.py               # Built-in Iris classification, CV, ROC-AUC and prediction
+├── iris_diagnostics.py      # Built-in Iris regression assumption diagnostics
+├── reporting.py             # Visualizations, TXT and HTML report generation
 ├── custom_ml.py             # Reusable custom-dataset classification engine
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
 ├── tests/
+│   ├── test_cli.py
+│   ├── test_data_loader.py
 │   ├── test_regression.py
 │   ├── test_statistics.py
 │   └── test_custom_ml.py
@@ -117,7 +126,7 @@ Tests cover regression fitting/diagnostics/exports, pairwise correlation cleanin
 ## Future improvements
 
 - Extend custom classification outputs with visualizations and automated reports.
-- Split `statmate.py` into loading, statistics, regression, ML, reporting and CLI modules.
+- Continue the modular refactor by extracting remaining Iris diagnostics and reporting from the backwards-compatible `statmate.py` API.
 - Add effect sizes, confidence intervals, optional correlation multiplicity correction and hypothesis exports.
 - Support paired/repeated-measures designs and richer small-sample inference.
 - Add hyperparameter tuning, regression ML models and feature selection.
