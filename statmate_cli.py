@@ -92,9 +92,9 @@ def run_cli(api):
             api.generate_report(data)
             api.generate_html_report(data)
         elif choice == "13":
-            api.generate_report(data) if iris_workflow else api.generate_custom_text_report(data)
+            api.generate_report(data) if iris_workflow else api.generate_custom_text_report(data, session=session)
         elif choice == "14":
-            api.generate_html_report(data) if iris_workflow else api.generate_custom_html_report(data)
+            api.generate_html_report(data) if iris_workflow else api.generate_custom_html_report(data, session=session)
         elif choice == "15":
             api.regression_diagnostics(data)
         elif choice == "16":
