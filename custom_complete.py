@@ -1,5 +1,7 @@
 """End-to-end analysis orchestration for custom StatMate datasets."""
 
+from custom_reporting import generate_custom_html_report
+
 def custom_complete_analysis(data, api):
     """Run the non-interactive core of a complete custom-data analysis.
 
@@ -20,6 +22,9 @@ def custom_complete_analysis(data, api):
     print("\n3. Correlation analysis")
     api.correlation_analysis(data)
 
+    print("\n4. HTML report")
+    report_path = generate_custom_html_report(data)
+
     print("\n" + "-" * 60)
     print("Complete automatic analysis finished.")
     print(
@@ -28,4 +33,4 @@ def custom_complete_analysis(data, api):
         "regression, classification, ROC-AUC, feature importance, "
         "or prediction."
     )
-    return data
+    return {"data": data, "report_path": report_path}
