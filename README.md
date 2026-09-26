@@ -86,6 +86,8 @@ StatMate/
 ├── statistics_analysis.py   # Robust correlation and custom group inference
 ├── regression_analysis.py   # OLS fitting, VIF, diagnostics and custom regression
 ├── iris_ml.py               # Built-in Iris classification, CV, ROC-AUC and prediction
+├── iris_diagnostics.py      # Built-in Iris regression assumption diagnostics
+├── reporting.py             # Visualizations, TXT and HTML report generation
 ├── custom_ml.py             # Reusable custom-dataset classification engine
 ├── README.md
 ├── requirements.txt
