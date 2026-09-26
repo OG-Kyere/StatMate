@@ -1,25 +1,3 @@
-import os
-from pathlib import Path
-
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-
-from scipy.stats import pearsonr, shapiro, f_oneway, levene, ttest_ind, mannwhitneyu, kruskal
-from statsmodels.stats.oneway import anova_oneway
-from statsmodels.stats.multitest import multipletests
-from itertools import combinations
-
-from statsmodels.stats.multicomp import pairwise_tukeyhsd
-
-from statsmodels.stats.diagnostic import het_breuschpagan
-from statsmodels.stats.outliers_influence import variance_inflation_factor
-from statsmodels.stats.stattools import durbin_watson
-import statsmodels.formula.api as smf
-import statsmodels.api as sm
-
 from custom_ml import (
     custom_classification_analysis,
     custom_model_comparison,
