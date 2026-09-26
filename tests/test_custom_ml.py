@@ -63,5 +63,47 @@ class CustomClassificationTests(unittest.TestCase):
         custom.assert_called_once()
 
 
+    def test_custom_roc_auc_binary_and_multiclass(self):
+        binary = custom_ml.custom_roc_auc_analysis
+        with patch.object(custom_ml, "_classification_setup", return_value=("target", ["age", "region"])):
+            with patch.object(custom_ml.Path, "mkdir"), patch.object(pd.DataFrame, "to_csv"):
+                result = binary(self.data())
+        self.assertTrue(result.loc[0, "AUC"] >= 0)
+        multi = self.data()
+        multi["target"] = np.repeat(["a", "b", "c"], 20)
+        with patch.object(custom_ml, "_classification_setup", return_value=("target", ["age", "region"])):
+            with patch.object(custom_ml.Path, "mkdir"), patch.object(pd.DataFrame, "to_csv"):
+                result = custom_ml.custom_roc_auc_analysis(multi)
+        self.assertEqual(result.loc[0, "Classes"], 3)
+
+    def test_custom_feature_importance_preserves_transformed_names(self):
+        with patch.object(custom_ml, "_classification_setup", return_value=("target", ["age", "region"])):
+            with patch.object(custom_ml.Path, "mkdir"), patch.object(pd.DataFrame, "to_csv"):
+                result = custom_ml.custom_feature_importance_analysis(self.data())
+        self.assertAlmostEqual(result["Importance"].sum(), 1.0)
+        self.assertTrue(result["Feature"].str.contains("region").any())
+
+    def test_custom_prediction_returns_probabilities(self):
+        with patch.object(custom_ml, "_classification_setup", return_value=("target", ["age", "region"])), \
+             patch("builtins.input", side_effect=["30", "north"]):
+            result = custom_ml.custom_prediction(self.data())
+        self.assertIn(result["Prediction"], {"yes", "no"})
+        self.assertAlmostEqual(sum(result["Probabilities"].values()), 1.0)
+
+    def test_custom_menu_routes_options_eight_to_eleven(self):
+        data = self.data()
+        with patch("builtins.input", side_effect=["16", "8", "9", "10", "11", "0"]), \
+             patch.object(app, "load_custom_dataset", return_value=data), \
+             patch.object(app, "custom_model_comparison") as compare, \
+             patch.object(app, "custom_roc_auc_analysis") as roc, \
+             patch.object(app, "custom_feature_importance_analysis") as importance, \
+             patch.object(app, "custom_prediction") as prediction:
+            app.main()
+        compare.assert_called_once()
+        roc.assert_called_once()
+        importance.assert_called_once()
+        prediction.assert_called_once()
+
+
 if __name__ == "__main__":
     unittest.main()
