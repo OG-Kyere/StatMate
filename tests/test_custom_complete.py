@@ -97,5 +97,27 @@ class CustomReportingTests(unittest.TestCase):
         self.assertIn("group", report)
 
 
+    def test_html_report_includes_stored_classification_results(self):
+        from analysis_session import AnalysisSession
+        from custom_reporting import generate_custom_html_report
+
+        data = pd.DataFrame({"x": [1, 2, 3, 4], "group": ["A", "A", "B", "B"]})
+        session = AnalysisSession()
+        session.remember("classification", pd.DataFrame([{
+            "Model": "Logistic Regression",
+            "Accuracy": 0.90,
+            "F1": 0.89,
+        }]))
+
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "report.html"
+            path = generate_custom_html_report(data, output, session=session)
+            html = Path(path).read_text(encoding="utf-8")
+
+        self.assertIn("Stored Classification Results", html)
+        self.assertIn("Logistic Regression", html)
+        self.assertIn("0.9", html)
+
+
 if __name__ == "__main__":
     unittest.main()
