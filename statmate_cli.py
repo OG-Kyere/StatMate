@@ -4,11 +4,14 @@ Analysis functions remain importable from statmate.py for backwards compatibilit
 This module owns dataset state, menu rendering, and command routing.
 """
 
+from analysis_session import AnalysisSession
+
 
 def run_cli(api):
     data = api.load_dataset()
     dataset_name = "Built-in Iris dataset"
     iris_workflow = True
+    session = AnalysisSession()
 
     while True:
         print("\n" + "=" * 60)
@@ -54,9 +57,15 @@ def run_cli(api):
         elif choice == "5":
             api.post_hoc_analysis(data) if iris_workflow else api.custom_hypothesis_analysis(data, post_hoc=True)
         elif choice == "6":
-            api.regression_analysis(data) if iris_workflow else api.custom_regression_analysis(data)
+            if iris_workflow:
+                api.regression_analysis(data)
+            else:
+                session.remember("regression", api.custom_regression_analysis(data))
         elif choice == "7":
-            api.machine_learning_analysis(data) if iris_workflow else api.custom_classification_analysis(data)
+            if iris_workflow:
+                api.machine_learning_analysis(data)
+            else:
+                session.remember("classification", api.custom_classification_analysis(data))
         elif choice == "8":
             api.compare_models(data) if iris_workflow else api.custom_model_comparison(data)
         elif choice == "9":
@@ -94,10 +103,12 @@ def run_cli(api):
                 data = custom_data
                 dataset_name = "Custom dataset"
                 iris_workflow = False
+                session.reset()
         elif choice == "17":
             data = api.load_dataset()
             dataset_name = "Built-in Iris dataset"
             iris_workflow = True
+            session.reset()
             print("\nSwitched back to the built-in Iris dataset.")
         elif choice == "0":
             print("\nThank you for using StatMate!")
