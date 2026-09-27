@@ -103,10 +103,10 @@ def build_session_sections(session=None):
     return sections
 
 
-def _table_html(frame):
+def _table_html(frame, empty_message="No applicable results."):
     """Render a DataFrame as a compact HTML table."""
     if frame is None or frame.empty:
-        return "<p>No applicable results.</p>"
+        return f"<p>{escape(empty_message)}</p>"
     return frame.to_html(
         border=0,
         classes="dataframe",
@@ -115,10 +115,10 @@ def _table_html(frame):
     )
 
 
-def _table_text(frame):
+def _table_text(frame, empty_message="No applicable results."):
     """Render a DataFrame for the plain-text report."""
     if frame is None or frame.empty:
-        return "No applicable results."
+        return empty_message
     return frame.to_string()
 
 
@@ -155,36 +155,36 @@ NUMERIC CORRELATION MATRIX
 
 STORED HYPOTHESIS TEST RESULTS
 {'-' * 60}
-{_table_text(session_sections.get("hypothesis_summary"))}
-{_table_text(session_sections.get("hypothesis_groups"))}
+{_table_text(session_sections.get("hypothesis_summary"), "Not performed during this session.")}
+{_table_text(session_sections.get("hypothesis_groups"), "Not performed during this session.")}
 
 STORED POST-HOC WORKFLOW RESULTS
 {'-' * 60}
-{_table_text(session_sections.get("post_hoc_summary"))}
-{_table_text(session_sections.get("post_hoc_groups"))}
+{_table_text(session_sections.get("post_hoc_summary"), "Not performed during this session.")}
+{_table_text(session_sections.get("post_hoc_groups"), "Not performed during this session.")}
 
 STORED REGRESSION RESULTS
 {'-' * 60}
-{_table_text(session_sections.get("regression_summary"))}
-{_table_text(session_sections.get("regression_coefficients"))}
-{_table_text(session_sections.get("regression_vif"))}
-{_table_text(session_sections.get("regression_diagnostics"))}
+{_table_text(session_sections.get("regression_summary"), "Not performed during this session.")}
+{_table_text(session_sections.get("regression_coefficients"), "Not performed during this session.")}
+{_table_text(session_sections.get("regression_vif"), "Not performed during this session.")}
+{_table_text(session_sections.get("regression_diagnostics"), "Not performed during this session.")}
 
 STORED CLASSIFICATION RESULTS
 {'-' * 60}
-{_table_text(session_sections.get("classification"))}
+{_table_text(session_sections.get("classification"), "Not performed during this session.")}
 
 STORED MODEL COMPARISON RESULTS
 {'-' * 60}
-{_table_text(session_sections.get("model_comparison"))}
+{_table_text(session_sections.get("model_comparison"), "Not performed during this session.")}
 
 STORED ROC-AUC RESULTS
 {'-' * 60}
-{_table_text(session_sections.get("roc_auc"))}
+{_table_text(session_sections.get("roc_auc"), "Not performed during this session.")}
 
 STORED FEATURE IMPORTANCE RESULTS
 {'-' * 60}
-{_table_text(session_sections.get("feature_importance"))}
+{_table_text(session_sections.get("feature_importance"), "Not performed during this session.")}
 
 ANALYSIS SCOPE
 {'-' * 60}
@@ -243,30 +243,30 @@ th {{ text-align: center; }}
 {_table_html(sections["correlation"])}
 
 <h2>Stored Hypothesis Test Results</h2>
-{_table_html(session_sections.get("hypothesis_summary"))}
-{_table_html(session_sections.get("hypothesis_groups"))}
+{_table_html(session_sections.get("hypothesis_summary"), "Not performed during this session.")}
+{_table_html(session_sections.get("hypothesis_groups"), "Not performed during this session.")}
 
 <h2>Stored Post-Hoc Workflow Results</h2>
-{_table_html(session_sections.get("post_hoc_summary"))}
-{_table_html(session_sections.get("post_hoc_groups"))}
+{_table_html(session_sections.get("post_hoc_summary"), "Not performed during this session.")}
+{_table_html(session_sections.get("post_hoc_groups"), "Not performed during this session.")}
 
 <h2>Stored Regression Results</h2>
-{_table_html(session_sections.get("regression_summary"))}
-{_table_html(session_sections.get("regression_coefficients"))}
-{_table_html(session_sections.get("regression_vif"))}
-{_table_html(session_sections.get("regression_diagnostics"))}
+{_table_html(session_sections.get("regression_summary"), "Not performed during this session.")}
+{_table_html(session_sections.get("regression_coefficients"), "Not performed during this session.")}
+{_table_html(session_sections.get("regression_vif"), "Not performed during this session.")}
+{_table_html(session_sections.get("regression_diagnostics"), "Not performed during this session.")}
 
 <h2>Stored Classification Results</h2>
-{_table_html(session_sections.get("classification"))}
+{_table_html(session_sections.get("classification"), "Not performed during this session.")}
 
 <h2>Stored Model Comparison Results</h2>
-{_table_html(session_sections.get("model_comparison"))}
+{_table_html(session_sections.get("model_comparison"), "Not performed during this session.")}
 
 <h2>Stored ROC-AUC Results</h2>
-{_table_html(session_sections.get("roc_auc"))}
+{_table_html(session_sections.get("roc_auc"), "Not performed during this session.")}
 
 <h2>Stored Feature Importance Results</h2>
-{_table_html(session_sections.get("feature_importance"))}
+{_table_html(session_sections.get("feature_importance"), "Not performed during this session.")}
 
 <h2>Analysis Scope</h2>
 <p class="note">
