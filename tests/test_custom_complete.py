@@ -165,5 +165,20 @@ class CustomReportingTests(unittest.TestCase):
         self.assertIn("score", html)
 
 
+    def test_html_report_distinguishes_unperformed_session_analysis(self):
+        from analysis_session import AnalysisSession
+        from custom_reporting import generate_custom_html_report
+
+        data = pd.DataFrame({"value": [1.0, 2.0, 3.0]})
+        session = AnalysisSession()
+
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "report.html"
+            path = generate_custom_html_report(data, output, session=session)
+            html = Path(path).read_text(encoding="utf-8")
+
+        self.assertIn("Not performed during this session.", html)
+
+
 if __name__ == "__main__":
     unittest.main()
