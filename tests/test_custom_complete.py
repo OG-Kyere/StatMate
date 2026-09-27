@@ -119,5 +119,51 @@ class CustomReportingTests(unittest.TestCase):
         self.assertIn("0.9", html)
 
 
+    def test_html_report_includes_extended_session_results(self):
+        from analysis_session import AnalysisSession
+        from custom_reporting import generate_custom_html_report
+
+        data = pd.DataFrame({
+            "score": [10, 12, 14, 16, 18, 20],
+            "group": ["A", "A", "A", "B", "B", "B"],
+        })
+        session = AnalysisSession()
+        hypothesis = {
+            "name": "Welch t-test",
+            "statistic": 2.5,
+            "p": 0.03,
+            "normality": [0.20, 0.30],
+            "variance_p": 0.10,
+            "labels": ["A", "B"],
+            "groups": [[10, 12, 14], [16, 18, 20]],
+            "clean": data,
+            "dropped": 0,
+        }
+        session.remember("hypothesis", hypothesis)
+        session.remember("model_comparison", pd.DataFrame([{
+            "Model": "Random Forest", "Accuracy": 0.95
+        }]))
+        session.remember("roc_auc", pd.DataFrame([{
+            "Metric": "ROC-AUC", "AUC": 0.97
+        }]))
+        session.remember("feature_importance", pd.DataFrame([{
+            "Feature": "score", "Importance": 1.0
+        }]))
+
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "report.html"
+            path = generate_custom_html_report(data, output, session=session)
+            html = Path(path).read_text(encoding="utf-8")
+
+        self.assertIn("Stored Hypothesis Test Results", html)
+        self.assertIn("Welch t-test", html)
+        self.assertIn("Stored Model Comparison Results", html)
+        self.assertIn("Random Forest", html)
+        self.assertIn("Stored ROC-AUC Results", html)
+        self.assertIn("0.97", html)
+        self.assertIn("Stored Feature Importance Results", html)
+        self.assertIn("score", html)
+
+
 if __name__ == "__main__":
     unittest.main()
