@@ -74,6 +74,32 @@ def build_session_sections(session=None):
     if isinstance(classification, pd.DataFrame):
         sections["classification"] = classification
 
+    for key in ("hypothesis", "post_hoc"):
+        result = results.get(key)
+        if result:
+            labels = list(map(str, result["labels"]))
+            normality = [
+                value if value is not None else np.nan
+                for value in result["normality"]
+            ]
+            sections[f"{key}_summary"] = pd.DataFrame([{
+                "Test": result["name"],
+                "Statistic": result["statistic"],
+                "p Value": result["p"],
+                "Levene p Value": result["variance_p"],
+                "Excluded Rows": result["dropped"],
+            }])
+            sections[f"{key}_groups"] = pd.DataFrame({
+                "Group": labels,
+                "n": [len(group) for group in result["groups"]],
+                "Shapiro-Wilk p Value": normality,
+            })
+
+    for key in ("model_comparison", "roc_auc", "feature_importance"):
+        result = results.get(key)
+        if isinstance(result, pd.DataFrame):
+            sections[key] = result
+
     return sections
 
 
@@ -127,6 +153,16 @@ NUMERIC CORRELATION MATRIX
 {'-' * 60}
 {_table_text(sections["correlation"])}
 
+STORED HYPOTHESIS TEST RESULTS
+{'-' * 60}
+{_table_text(session_sections.get("hypothesis_summary"))}
+{_table_text(session_sections.get("hypothesis_groups"))}
+
+STORED POST-HOC WORKFLOW RESULTS
+{'-' * 60}
+{_table_text(session_sections.get("post_hoc_summary"))}
+{_table_text(session_sections.get("post_hoc_groups"))}
+
 STORED REGRESSION RESULTS
 {'-' * 60}
 {_table_text(session_sections.get("regression_summary"))}
@@ -137,6 +173,18 @@ STORED REGRESSION RESULTS
 STORED CLASSIFICATION RESULTS
 {'-' * 60}
 {_table_text(session_sections.get("classification"))}
+
+STORED MODEL COMPARISON RESULTS
+{'-' * 60}
+{_table_text(session_sections.get("model_comparison"))}
+
+STORED ROC-AUC RESULTS
+{'-' * 60}
+{_table_text(session_sections.get("roc_auc"))}
+
+STORED FEATURE IMPORTANCE RESULTS
+{'-' * 60}
+{_table_text(session_sections.get("feature_importance"))}
 
 ANALYSIS SCOPE
 {'-' * 60}
@@ -194,6 +242,14 @@ th {{ text-align: center; }}
 <h2>Numeric Correlation Matrix</h2>
 {_table_html(sections["correlation"])}
 
+<h2>Stored Hypothesis Test Results</h2>
+{_table_html(session_sections.get("hypothesis_summary"))}
+{_table_html(session_sections.get("hypothesis_groups"))}
+
+<h2>Stored Post-Hoc Workflow Results</h2>
+{_table_html(session_sections.get("post_hoc_summary"))}
+{_table_html(session_sections.get("post_hoc_groups"))}
+
 <h2>Stored Regression Results</h2>
 {_table_html(session_sections.get("regression_summary"))}
 {_table_html(session_sections.get("regression_coefficients"))}
@@ -202,6 +258,15 @@ th {{ text-align: center; }}
 
 <h2>Stored Classification Results</h2>
 {_table_html(session_sections.get("classification"))}
+
+<h2>Stored Model Comparison Results</h2>
+{_table_html(session_sections.get("model_comparison"))}
+
+<h2>Stored ROC-AUC Results</h2>
+{_table_html(session_sections.get("roc_auc"))}
+
+<h2>Stored Feature Importance Results</h2>
+{_table_html(session_sections.get("feature_importance"))}
 
 <h2>Analysis Scope</h2>
 <p class="note">
