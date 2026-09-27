@@ -4,11 +4,14 @@ Analysis functions remain importable from statmate.py for backwards compatibilit
 This module owns dataset state, menu rendering, and command routing.
 """
 
+from analysis_session import AnalysisSession
+
 
 def run_cli(api):
     data = api.load_dataset()
     dataset_name = "Built-in Iris dataset"
     iris_workflow = True
+    session = AnalysisSession()
 
     while True:
         print("\n" + "=" * 60)
@@ -38,12 +41,7 @@ def run_cli(api):
 
         choice = input("\nEnter your choice: ").strip()
 
-        if choice in {"12", "13", "14", "15"} and not iris_workflow:
-            print(
-                "\nWarning: This option currently uses Iris-specific variables. "
-                "Custom datasets currently support options 1 through 11."
-            )
-        elif choice == "1":
+        if choice == "1":
             api.explore_data(data)
         elif choice == "2":
             api.descriptive_statistics(data)
@@ -54,9 +52,15 @@ def run_cli(api):
         elif choice == "5":
             api.post_hoc_analysis(data) if iris_workflow else api.custom_hypothesis_analysis(data, post_hoc=True)
         elif choice == "6":
-            api.regression_analysis(data) if iris_workflow else api.custom_regression_analysis(data)
+            if iris_workflow:
+                api.regression_analysis(data)
+            else:
+                session.remember("regression", api.custom_regression_analysis(data))
         elif choice == "7":
-            api.machine_learning_analysis(data) if iris_workflow else api.custom_classification_analysis(data)
+            if iris_workflow:
+                api.machine_learning_analysis(data)
+            else:
+                session.remember("classification", api.custom_classification_analysis(data))
         elif choice == "8":
             api.compare_models(data) if iris_workflow else api.custom_model_comparison(data)
         elif choice == "9":
@@ -65,6 +69,8 @@ def run_cli(api):
             api.feature_importance_analysis(data) if iris_workflow else api.custom_feature_importance_analysis(data)
         elif choice == "11":
             api.predict_new_flower(data) if iris_workflow else api.custom_prediction(data)
+        elif choice == "12" and not iris_workflow:
+            api.custom_complete_analysis(data)
         elif choice == "12":
             api.explore_data(data)
             api.descriptive_statistics(data)
@@ -81,21 +87,26 @@ def run_cli(api):
             api.generate_report(data)
             api.generate_html_report(data)
         elif choice == "13":
-            api.generate_report(data)
+            api.generate_report(data) if iris_workflow else api.generate_custom_text_report(data, session=session)
         elif choice == "14":
-            api.generate_html_report(data)
+            api.generate_html_report(data) if iris_workflow else api.generate_custom_html_report(data, session=session)
         elif choice == "15":
-            api.regression_diagnostics(data)
+            if iris_workflow:
+                api.regression_diagnostics(data)
+            else:
+                api.custom_session_regression_diagnostics(session)
         elif choice == "16":
             custom_data = api.load_custom_dataset()
             if custom_data is not None:
                 data = custom_data
                 dataset_name = "Custom dataset"
                 iris_workflow = False
+                session.reset()
         elif choice == "17":
             data = api.load_dataset()
             dataset_name = "Built-in Iris dataset"
             iris_workflow = True
+            session.reset()
             print("\nSwitched back to the built-in Iris dataset.")
         elif choice == "0":
             print("\nThank you for using StatMate!")

@@ -356,6 +356,48 @@ def custom_regression_analysis(data):
     save_custom_regression_results(
         model, outcome, predictors, complete_rows, vif_results, diagnostics
     )
+    return {
+        "outcome": outcome,
+        "predictors": predictors,
+        "complete_rows": complete_rows,
+        "model": model,
+        "vif": vif_results,
+        "diagnostics": diagnostics,
+    }
+
+
+def custom_session_regression_diagnostics(session):
+    """Display diagnostics from the custom regression stored in this session."""
+    regression = getattr(session, "results", {}).get("regression")
+    if not regression:
+        print(
+            "\nNo custom regression is stored for the current dataset. "
+            "Run option 6 first, then return to option 15."
+        )
+        return None
+
+    diagnostics = regression["diagnostics"]
+    print("\n" + "=" * 60)
+    print("CUSTOM REGRESSION DIAGNOSTICS")
+    print("=" * 60)
+    print(f"Outcome: {regression['outcome']}")
+    print("Predictors: " + ", ".join(map(str, regression["predictors"])))
+    print(f"Complete rows used: {regression['complete_rows']}")
+    print(f"Shapiro-Wilk p-value: {diagnostics['shapiro_p_value']:.4f}")
+    print(f"Breusch-Pagan p-value: {diagnostics['breusch_pagan_p_value']:.4f}")
+    print(f"Durbin-Watson: {diagnostics['durbin_watson']:.4f}")
+    print(
+        "Potentially influential observations: "
+        f"{diagnostics['influential_observations']} "
+        f"(Cook's distance threshold: {diagnostics['cook_threshold']:.4f})"
+    )
+    print("\nVIF:")
+    print(regression["vif"].to_string(index=False))
+    print(
+        "\nDiagnostic plots generated during option 6 are available in "
+        "the figures directory."
+    )
+    return diagnostics
 
 
 def regression_analysis(data):

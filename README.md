@@ -36,7 +36,7 @@ On Windows, use `py` instead of `python` if needed. Excel loading supports `.xls
 0. Exit
 ```
 
-Option 16 validates the file, empty data and column names, then profiles types, missing values and a preview. Option 17 restores Iris. Custom datasets support options 1–11. Options 7–11 provide reusable classification, model comparison, ROC-AUC, feature importance and prediction with mixed numeric/categorical predictors. Options 12–15 remain Iris-specific. Custom regression diagnostics run within option 6.
+Option 16 validates the file, empty data and column names, then profiles types, missing values and a preview. Option 17 restores Iris. Custom datasets now support options 1–15. Options 7–11 provide reusable classification, model comparison, ROC-AUC, feature importance and prediction with mixed numeric/categorical predictors. Option 12 runs the safe automatic custom-data workflow and creates an HTML report without guessing an outcome or grouping variable. Options 13 and 14 generate custom text and HTML reports. Option 15 displays diagnostics from the custom regression fitted during the current session; run option 6 first.
 
 ## Current features
 
@@ -74,7 +74,7 @@ Custom OLS offers numeric outcome/predictor selection, complete finite rows, con
 
 Iris supports Logistic Regression, KNN, Decision Tree and Random Forest; scaled pipelines; train/test evaluation; five-fold stratified cross-validation; accuracy, precision, recall and F1 comparisons; out-of-fold one-vs-rest and macro-average ROC-AUC; feature importance; and new-flower prediction.
 
-Text and HTML reports already exist. Option 12 generates the complete Iris workflow and supporting files. Individual reports can use existing saved results; rerun the relevant analyses to refresh those files and HTML-linked figures.
+Text and HTML reports exist for both Iris and custom datasets. For custom data, the automatic report includes dataset dimensions, column types, missingness, descriptive statistics and numeric correlations without guessing a research question. During the active custom-data session, successful regression and classification results are retained in memory; options 13 and 14 can include those stored model results in the generated text/HTML reports. Loading another custom dataset or switching back to Iris clears the session so results are not mixed across datasets. Option 15 reuses the stored custom regression diagnostics without refitting the model.
 
 ## Project structure
 
@@ -89,6 +89,9 @@ StatMate/
 ├── iris_diagnostics.py      # Built-in Iris regression assumption diagnostics
 ├── reporting.py             # Visualizations, TXT and HTML report generation
 ├── custom_ml.py             # Reusable custom-dataset classification engine
+├── custom_complete.py       # Safe automatic custom-data workflow
+├── custom_reporting.py      # Custom TXT/HTML report generation
+├── analysis_session.py      # In-memory results for the active custom dataset
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
@@ -109,11 +112,11 @@ Paths are relative to the working directory. Rerunning an analysis overwrites it
 
 | Directory | Files |
 | --- | --- |
-| `results/` | `model_comparison.csv`, `roc_auc_results.csv`, `feature_importance.csv`, `vif_results.csv`, `custom_classification_results.csv` |
+| `results/` | `model_comparison.csv`, `roc_auc_results.csv`, `feature_importance.csv`, `vif_results.csv`, `custom_classification_results.csv`, `custom_roc_auc.csv`, `custom_feature_importance.csv` |
 | `results/` (custom OLS) | `custom_regression_coefficients.csv`, `custom_regression_diagnostics.csv`, `custom_regression_vif.csv` |
 | `figures/` | `distributions.png`, `boxplots.png`, `correlation_heatmap.png`, `petal_length_by_species.png`, `confusion_matrix.png`, `model_comparison.png`, `roc_curves.png`, `feature_importance.png`, `regression_qq_plot.png`, `residuals_vs_fitted.png` |
 | `figures/` (custom OLS) | `custom_regression_qq_plot.png`, `custom_regression_residuals_vs_fitted.png` |
-| `reports/` | `statmate_report.txt`, `statmate_report.html` |
+| `reports/` | `statmate_report.txt`, `statmate_report.html`, `custom_statmate_report.txt`, `custom_statmate_report.html` |
 
 ## Tests
 
@@ -121,12 +124,12 @@ Paths are relative to the working directory. Rerunning an analysis overwrites it
 python -m unittest discover -s tests -v
 ```
 
-Tests cover regression fitting/diagnostics/exports, pairwise correlation cleaning, degenerate data, group-test selection, post-hoc routing, custom classification preprocessing/model comparison, invalid inputs, custom menu routing and the original Iris tests.
+Tests cover regression fitting/diagnostics/exports, pairwise correlation cleaning, degenerate data, group-test selection, post-hoc routing, custom classification preprocessing/model comparison, custom complete analysis, custom TXT/HTML reporting, session state, stored custom regression diagnostics, invalid inputs, custom menu routing and the original Iris tests.
 
 ## Future improvements
 
-- Extend custom classification outputs with visualizations and automated reports.
-- Continue the modular refactor by extracting remaining Iris diagnostics and reporting from the backwards-compatible `statmate.py` API.
+- Extend custom classification outputs with dedicated visualizations.
+- Expand session-aware reporting to additional explicitly configured analyses such as hypothesis tests, ROC-AUC and feature importance.
 - Add effect sizes, confidence intervals, optional correlation multiplicity correction and hypothesis exports.
 - Support paired/repeated-measures designs and richer small-sample inference.
 - Add hyperparameter tuning, regression ML models and feature selection.
