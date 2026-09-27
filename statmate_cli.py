@@ -48,9 +48,9 @@ def run_cli(api):
         elif choice == "3":
             api.correlation_analysis(data)
         elif choice == "4":
-            api.statistical_tests(data) if iris_workflow else api.custom_hypothesis_analysis(data)
+            api.statistical_tests(data) if iris_workflow else session.remember("hypothesis", api.custom_hypothesis_analysis(data))
         elif choice == "5":
-            api.post_hoc_analysis(data) if iris_workflow else api.custom_hypothesis_analysis(data, post_hoc=True)
+            api.post_hoc_analysis(data) if iris_workflow else session.remember("post_hoc", api.custom_hypothesis_analysis(data, post_hoc=True))
         elif choice == "6":
             if iris_workflow:
                 api.regression_analysis(data)
@@ -62,11 +62,11 @@ def run_cli(api):
             else:
                 session.remember("classification", api.custom_classification_analysis(data))
         elif choice == "8":
-            api.compare_models(data) if iris_workflow else api.custom_model_comparison(data)
+            api.compare_models(data) if iris_workflow else session.remember("model_comparison", api.custom_model_comparison(data))
         elif choice == "9":
-            api.roc_curve_analysis(data) if iris_workflow else api.custom_roc_auc_analysis(data)
+            api.roc_curve_analysis(data) if iris_workflow else session.remember("roc_auc", api.custom_roc_auc_analysis(data))
         elif choice == "10":
-            api.feature_importance_analysis(data) if iris_workflow else api.custom_feature_importance_analysis(data)
+            api.feature_importance_analysis(data) if iris_workflow else session.remember("feature_importance", api.custom_feature_importance_analysis(data))
         elif choice == "11":
             api.predict_new_flower(data) if iris_workflow else api.custom_prediction(data)
         elif choice == "12" and not iris_workflow:
